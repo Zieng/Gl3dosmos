@@ -11,26 +11,31 @@ import static android.opengl.GLES20.glShaderSource;
 
 public class GLManager
 {
-    public static final int COMPONENTS_PER_VERTEX = 3;
-    public static final int FLOAT_SIZE = 4;
-    public static final int STRIDE = (COMPONENTS_PER_VERTEX) *(FLOAT_SIZE);
-    public static final int ELEMENTS_PER_VERTEX = 3; //x,y,z
+//    public static final int COMPONENTS_PER_VERTEX = 3;
+//    public static final int FLOAT_SIZE = 4;
+//    public static final int STRIDE = (COMPONENTS_PER_VERTEX) *(FLOAT_SIZE);
+//    public static final int ELEMENTS_PER_VERTEX = 3; //x,y,z
 
 
     // match the string above
-    public static int  MVPID;
+    public static int MVPID;
     public static int RenderID;
     public static int MyTextureSamplerID;
     public static int modelMatrixID;
     public static int viewMatrixID;
     public static int lightPositionID;
 
+    public static int glsl_vertexPosition;
+    public static int glsl_vertexColor;
+    public static int glsl_vertexUV;
+    public static int glsl_vertexNormal;
+
     // vertex shader program packed in the string
     private static String vertexShader=
-            " layout(location = 0) in vec3 vertexPosition_modelspace;"+
-    "layout(location = 1) in vec3 vertexColor;"+
-    "layout(location = 2) in vec2 vertexUV;"+
-    "layout(location = 3) in vec3 vertexNormal_modelspace;"+
+    "attribute vec3 vertexPosition_modelspace;"+
+    "attribute vec3 vertexColor;"+
+    "attribute vec2 vertexUV;"+
+    "attribute vec3 vertexNormal_modelspace;"+
     "\n"+
     "uniform int choose;"+
     "uniform mat4 MVP;"+
@@ -38,12 +43,12 @@ public class GLManager
     "uniform mat4 modelMatrix;"+
     "uniform vec3 lightPosition_worldspace;"+
     "\n"+
-    "out vec3 FragmentColor;"+
-    "out vec2 UV;"+
-    "out vec3 position_worldspace;"+
-    "out vec3 normal_cameraspace;"+
-    "out vec3 eyeDirection_cameraspace;"+
-    "out vec3 lightDirection_cameraspace;"+
+    "varying vec3 FragmentColor;"+
+    "varying vec2 UV;"+
+    "varying vec3 position_worldspace;"+
+    "varying vec3 normal_cameraspace;"+
+    "varying vec3 eyeDirection_cameraspace;"+
+    "varying vec3 lightDirection_cameraspace;"+
     "\n"+
     "void main()"+
     "{"+
@@ -68,14 +73,13 @@ public class GLManager
 
     //fragment shader packed in string(no source code in the text,so I write it below)
     private static String fragmentShader=
-            "in vec3 FragmentColor;"+
-    "in vec2 UV;"+
-    "in vec3 position_worldspace;"+
-    "in vec3 normal_cameraspace;"+
-    "in vec3 eyeDirection_cameraspace;"+
-    "in vec3 lightDirection_cameraspace;"+
-    "\n"+
-    "out vec3 color;"+
+            "precision mediump float;"+
+    "varying vec3 FragmentColor;"+
+    "varying vec2 UV;"+
+    "varying vec3 position_worldspace;"+
+    "varying vec3 normal_cameraspace;"+
+    "varying vec3 eyeDirection_cameraspace;"+
+    "varying vec3 lightDirection_cameraspace;"+
     "\n"+
     "uniform sampler2D MyTextureSampler;"+
     "uniform int choose;"+
@@ -85,17 +89,17 @@ public class GLManager
     "{"+
         "if (choose==0)"+
         "{"+
-            "color=FragmentColor;"+
+            "gl_FragColor=FragmentColor;"+
         "}"+
         "else if(choose == 1)"+
         "{"+
-            "color=texture(MyTextureSampler,UV).rgb;"+
+            "gl_FragColor=texture2D(MyTextureSampler,UV).rgb;"+
         "}"+
         "else"+
         "{"+
             "vec3 lightColor=vec3(1,1,1);"+
             "float lightPower=50.f;"+
-            "vec3 materialDiffuseColor=texture(MyTextureSampler,UV).rgb;"+
+            "vec3 materialDiffuseColor=texture2D(MyTextureSampler,UV).rgb;"+
             "vec3 materialAmbientColor=vec3(0.8,0.8,0.8) * materialDiffuseColor;"+
             "vec3 materialSpecularColor=vec3(0.4,0.3,0.3);"+
             "float d=length(lightPosition_worldspace - position_worldspace);"+
@@ -105,7 +109,7 @@ public class GLManager
             "vec3 E=normalize( eyeDirection_cameraspace );"+
             "vec3 R=reflect(-l,n);"+
             "float cosAlpha=clamp(dot(E,R),0,1);"+
-            "color=materialAmbientColor"+
+            "gl_FragColor=materialAmbientColor"+
                     "+ materialDiffuseColor * lightColor * lightPower * cosTheta/(d*d)"+
                     "+ materialSpecularColor * lightColor * lightPower * pow(cosAlpha,5)/(d*d);"+
         "}"+
