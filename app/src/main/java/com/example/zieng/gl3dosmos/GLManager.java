@@ -1,16 +1,26 @@
 package com.example.zieng.gl3dosmos;
 
+import android.util.Log;
+
+import static android.opengl.GLES20.GL_VALIDATE_STATUS;
 import static android.opengl.GLES20.GL_FRAGMENT_SHADER;
 import static android.opengl.GLES20.GL_VERTEX_SHADER;
 import static android.opengl.GLES20.glAttachShader;
 import static android.opengl.GLES20.glCompileShader;
 import static android.opengl.GLES20.glCreateProgram;
 import static android.opengl.GLES20.glCreateShader;
+import static android.opengl.GLES20.glGetAttribLocation;
+import static android.opengl.GLES20.glGetUniformLocation;
 import static android.opengl.GLES20.glLinkProgram;
 import static android.opengl.GLES20.glShaderSource;
+import static android.opengl.GLES20.glValidateProgram;
+import static android.opengl.GLES20.glGetProgramInfoLog;
+import static android.opengl.GLES20.glGetProgramiv;
+import static android.opengl.GLES20.glGetShaderInfoLog;
 
 public class GLManager
 {
+    private static final String TAG = "GLManager";
 //    public static final int COMPONENTS_PER_VERTEX = 3;
 //    public static final int FLOAT_SIZE = 4;
 //    public static final int STRIDE = (COMPONENTS_PER_VERTEX) *(FLOAT_SIZE);
@@ -21,99 +31,11 @@ public class GLManager
     public static int MVPID;
     public static int RenderID;
     public static int MyTextureSamplerID;
-    public static int modelMatrixID;
-    public static int viewMatrixID;
-    public static int lightPositionID;
+    public static int ColorID;
 
-    public static int glsl_vertexPosition;
-    public static int glsl_vertexColor;
-    public static int glsl_vertexUV;
-    public static int glsl_vertexNormal;
+    public static int glsl_vertexPosition = -1;
+    public static int glsl_vertexUV = -1;
 
-    // vertex shader program packed in the string
-    private static String vertexShader=
-    "attribute vec3 vertexPosition_modelspace;"+
-    "attribute vec3 vertexColor;"+
-    "attribute vec2 vertexUV;"+
-    "attribute vec3 vertexNormal_modelspace;"+
-    "\n"+
-    "uniform int choose;"+
-    "uniform mat4 MVP;"+
-    "uniform mat4 viewMatrix;"+
-    "uniform mat4 modelMatrix;"+
-    "uniform vec3 lightPosition_worldspace;"+
-    "\n"+
-    "varying vec3 FragmentColor;"+
-    "varying vec2 UV;"+
-    "varying vec3 position_worldspace;"+
-    "varying vec3 normal_cameraspace;"+
-    "varying vec3 eyeDirection_cameraspace;"+
-    "varying vec3 lightDirection_cameraspace;"+
-    "\n"+
-    "void main()"+
-    "{"+
-        "gl_PointSize = 4;"+
-        "if(choose!=0)"+
-        "{"+
-            "if(choose!=1)"+
-            "{"+
-                "position_worldspace=(modelMatrix * vec4(vertexPosition_modelspace,1)).xyz;"+
-                "eyeDirection_cameraspace=vec3(0,0,0)-(viewMatrix * modelMatrix * vec4(vertexPosition_modelspace,1)).xyz;"+
-                "vec3 lightPosition_cameraspace = ( viewMatrix * vec4(lightPosition_worldspace,1)).xyz;"+
-                "lightDirection_cameraspace = lightPosition_cameraspace + eyeDirection_cameraspace;"+
-                "normal_cameraspace = ( viewMatrix * modelMatrix * vec4(vertexNormal_modelspace,0)).xyz;"+
-            "}"+
-            "UV=vertexUV;"+
-        "}"+
-        "gl_Position=MVP*vec4(vertexPosition_modelspace,1);"+
-        "FragmentColor=vec3(1,1,1);"+
-    "}";
-
-
-
-    //fragment shader packed in string(no source code in the text,so I write it below)
-    private static String fragmentShader=
-            "precision mediump float;"+
-    "varying vec3 FragmentColor;"+
-    "varying vec2 UV;"+
-    "varying vec3 position_worldspace;"+
-    "varying vec3 normal_cameraspace;"+
-    "varying vec3 eyeDirection_cameraspace;"+
-    "varying vec3 lightDirection_cameraspace;"+
-    "\n"+
-    "uniform sampler2D MyTextureSampler;"+
-    "uniform int choose;"+
-    "uniform vec3 lightPosition_worldspace;"+
-    "\n"+
-    "void main()"+
-    "{"+
-        "if (choose==0)"+
-        "{"+
-            "gl_FragColor=FragmentColor;"+
-        "}"+
-        "else if(choose == 1)"+
-        "{"+
-            "gl_FragColor=texture2D(MyTextureSampler,UV).rgb;"+
-        "}"+
-        "else"+
-        "{"+
-            "vec3 lightColor=vec3(1,1,1);"+
-            "float lightPower=50.f;"+
-            "vec3 materialDiffuseColor=texture2D(MyTextureSampler,UV).rgb;"+
-            "vec3 materialAmbientColor=vec3(0.8,0.8,0.8) * materialDiffuseColor;"+
-            "vec3 materialSpecularColor=vec3(0.4,0.3,0.3);"+
-            "float d=length(lightPosition_worldspace - position_worldspace);"+
-            "vec3 n=normalize( normal_cameraspace);"+
-            "vec3 l=normalize( lightDirection_cameraspace );"+
-            "float cosTheta = clamp( dot(n,l),0,1);"+
-            "vec3 E=normalize( eyeDirection_cameraspace );"+
-            "vec3 R=reflect(-l,n);"+
-            "float cosAlpha=clamp(dot(E,R),0,1);"+
-            "gl_FragColor=materialAmbientColor"+
-                    "+ materialDiffuseColor * lightColor * lightPower * cosTheta/(d*d)"+
-                    "+ materialSpecularColor * lightColor * lightPower * pow(cosAlpha,5)/(d*d);"+
-        "}"+
-    "}";
 
     private static int program;   // handle to our GL program
 
@@ -122,26 +44,38 @@ public class GLManager
         return program;
     }
 
-    public static int buildProgram()
+    public static int buildProgram(String vertexShader, String fragmentShader)
     {
-        return linkProgram(compileVertexShader(),compileFragmentShader());
+        long origThreadID = Thread.currentThread().getId();
+        Log.e(TAG,"thread id = "+origThreadID);
+
+        Log.e(TAG,"link program.....");
+        return linkProgram(compileVertexShader(vertexShader), compileFragmentShader(fragmentShader));
     }
 
-    private static int compileVertexShader()
+    private static int compileVertexShader(String vertexShader)
     {
+        Log.e("GLManager","compile vertex shader....");
         return compileShader(GL_VERTEX_SHADER,vertexShader);
     }
 
-    private static int compileFragmentShader()
+    private static int compileFragmentShader(String fragmentShader)
     {
+        Log.e("GLManager","compile fragment shader.....");
         return compileShader(GL_FRAGMENT_SHADER,fragmentShader);
     }
 
     private static int compileShader(int type,String shaderCode)
     {
         final int shader = glCreateShader(type);  // create a shader object and store its ID
+        if(shader == 0)
+        {
+            Log.e("GLManager","glCreateShader() return 0");
+        }
         glShaderSource(shader,shaderCode);     // pass the shadercode to shader
         glCompileShader(shader);  // compile specified shader
+
+        Log.e("GLManager","compile shader return "+shader);
 
         return shader;
     }
@@ -149,11 +83,52 @@ public class GLManager
     private static int linkProgram(int vertexShader,int fragmentShader)
     {
         program = glCreateProgram();   // handle to the glProgram
-        glAttachShader(program,vertexShader);
-        glAttachShader(program,fragmentShader);
+        if(program == 0)
+        {
+            Log.e(TAG,"glCreateProgram() return 0");
+        }
+
+        Log.e("check vertex shader",glGetShaderInfoLog(vertexShader));
+        Log.e("check fragment shader", glGetShaderInfoLog(fragmentShader));
+
+        glAttachShader(program, vertexShader);
+        glAttachShader(program, fragmentShader);
         glLinkProgram(program);
+
+        if( validateProgram(program) == false )
+        {
+            Log.e("GLManager","gl program not correct");
+            return 0;
+        }
+
+
+        GLManager.MVPID = glGetUniformLocation(program,"MVP");
+        GLManager.RenderID = glGetUniformLocation(program, "choose");
+        GLManager.MyTextureSamplerID = glGetUniformLocation(program, "MyTextureSampler");
+        GLManager.ColorID = glGetUniformLocation(program,"FragmentColor");
+
+        GLManager.glsl_vertexPosition = glGetAttribLocation(program, "vertexPosition_modelspace");
+        GLManager.glsl_vertexUV = glGetAttribLocation(program,"vertexUV");
+
+        Log.e(TAG,"-------------------------------");
+        Log.e(TAG,"link is ok");
+        Log.e(TAG,"-------------------------------");
 
         return program;
     }
+
+    public static boolean validateProgram(int programObjectId)
+    {
+        glValidateProgram(programObjectId);
+        final int[] validateStatus = new int[1];
+
+        glGetProgramiv(programObjectId, GL_VALIDATE_STATUS, validateStatus, 0);
+
+        Log.e(TAG, "Results of validating program: " + validateStatus[0]);
+        Log.e(TAG,"program info:"+glGetProgramInfoLog(programObjectId) );
+
+        return validateStatus[0] != 0;
+    }
+
 }
 

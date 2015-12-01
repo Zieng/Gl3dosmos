@@ -14,6 +14,8 @@ import java.io.IOException;
  */
 public class SoundManager
 {
+    private static final String TAG = "SoundManager";
+    Context context;
     private SoundPool soundPool;
 
     private int thrust = -1;
@@ -21,8 +23,12 @@ public class SoundManager
     private int nextlevel = -1;
     private int gameover = -1;
 
+    public SoundManager(Context context)
+    {
+        this.context = context;
+    }
     // TODO: 11/22/15 add sound files
-    public void loadSound(Context context)
+    public void loadSound()
     {
         soundPool = new SoundPool(10, AudioManager.STREAM_MUSIC,0);
 //        try
@@ -79,5 +85,10 @@ public class SoundManager
                 soundPool.play(gameover,1,1,0,0,1);
                 break;
         }
+    }
+
+    public void init_()
+    {
+        Log.e(TAG,"init finished");
     }
 }

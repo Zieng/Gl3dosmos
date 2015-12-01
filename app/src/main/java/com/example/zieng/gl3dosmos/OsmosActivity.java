@@ -1,5 +1,6 @@
 package com.example.zieng.gl3dosmos;
 
+import android.app.Activity;
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
@@ -13,10 +14,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 //// TODO: 11/22/15 if AppComatActivity not working, change it to Activity
-public class OsmosActivity extends AppCompatActivity
+// origin is AppCompatActivity
+public class OsmosActivity extends Activity
 {
 
     private GLSurfaceView osmosView;
+    int level = 5 ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -31,8 +34,10 @@ public class OsmosActivity extends AppCompatActivity
         Point resolution = new Point();
         display.getSize(resolution);
 
-        osmosView = new OsmosView(this,resolution.x,resolution.y);
+        osmosView = new OsmosView(this,resolution.x,resolution.y, level);
         setContentView(osmosView);
+
+//        osmosView.setBackgroundResource(R.mipmap.repulsive);
     }
 
     @Override

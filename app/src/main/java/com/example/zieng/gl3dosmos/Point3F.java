@@ -15,6 +15,12 @@ public class Point3F extends PointF
         z = 0;
     }
 
+    public Point3F(Point3F ohter)
+    {
+        super(ohter.x,ohter.y);
+        z = ohter.z;
+    }
+
     public Point3F(float xx, float yy, float zz)
     {
         super(xx,yy);
@@ -29,14 +35,69 @@ public class Point3F extends PointF
         return false;
     }
 
-    public float get_length()
+    public double get_length()
     {
-        return (float) Math.sqrt( x*x + y*y + z*z  );
+        return Math.sqrt( x*x + y*y + z*z  );
     }
 
-    public float distance(Point3F p)
+    public double distance(Point3F p)
     {
-        return (float) Math.sqrt( Math.pow(x-p.x,2) + Math.pow(y-p.y,2)  + Math.pow(z-p.z, 2)  );
+        return Math.sqrt( Math.pow(x-p.x,2) + Math.pow(y-p.y,2)  + Math.pow(z-p.z, 2)  );
     }
 
+    public String toString()
+    {
+        String str = "Point3F";
+        str+="("+x+","+y+","+z+")";
+
+        return str;
+    }
+
+    public Point3F normalize()
+    {
+        float len = (float) (this.get_length() );
+
+        return new Point3F( x/len, y/len , z/len );
+    }
+
+    public Point3F subtract(Point3F other)
+    {
+        return new Point3F(x-other.x,  y- other.y , z-other.z);
+    }
+
+    public Point3F multiply(float d )
+    {
+        x *= d;
+        y *= d;
+        z *= d;
+
+        return new Point3F(x,y,z);
+    }
+
+    public Point3F multiply( Point3F other)
+    {
+        x *= other.x;
+        y *= other.y;
+        z *= other.z;
+
+        return new Point3F(x,y,z);
+    }
+
+    public Point3F reverse()
+    {
+        x = -x;
+        y = -y;
+        z = -z;
+
+        return new Point3F(x,y,z);
+    }
+
+    public Point3F add(Point3F other)
+    {
+        x += other.x;
+        y += other.y;
+        z += other.z;
+
+        return new Point3F(x,y,z);
+    }
 }

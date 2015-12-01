@@ -15,20 +15,26 @@ public class OsmosView extends GLSurfaceView
     SoundManager sm;
     InputController ic;
 
-    public OsmosView(Context context, int screenX, int screenY )
+    public OsmosView(Context context, int screenX, int screenY , int level)
     {
         super(context);
 
-        gm = new GameManager(screenX,screenY);
-        sm = new SoundManager();
-        sm.loadSound(context);
-        ic = new InputController(screenX,screenY);
+        gm = new GameManager(context,screenX,screenY);
+        sm = new SoundManager(context);
+        sm.loadSound();
+        ic = new InputController(context,screenX,screenY);
 
         setEGLContextClientVersion(2);
-        setRenderer(new OsmosRenderer(gm,sm,ic));
+        setRenderer(new OsmosRenderer(context, gm, sm, ic,level));
 
+//        setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+
+//        gm.init_(context);
         //debug info
-        Log.e("Init info","Osmosview created based on screenX="+screenX+",screenY="+screenY);
+        long origThreadID = Thread.currentThread().getId();
+        Log.e("\tOsmosView::","thread id = "+origThreadID);
+        Log.i("Init info", "Osmosview created based on screenX=" + screenX + ",screenY=" + screenY);
+
     }
 
     @Override
