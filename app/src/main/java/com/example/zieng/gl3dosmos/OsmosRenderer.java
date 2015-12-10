@@ -179,6 +179,7 @@ public class OsmosRenderer implements Renderer
 
             Log.e(TAG,"You lose!");
             // TODO: 11/29/15 handle Game over
+
         }
         else if( gm.remainingEnemies == 0)
         {
