@@ -1,4 +1,12 @@
 <resources>
     <string name="app_name">Gl3dosmos</string>
     <string name="action_settings">Settings</string>
+    <string name="title_activity_main">MainActivity</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_option">OptionActivity</string>
+    <string name="title_activity_welcome">WelcomeActivity</string>
+    <string name="title_activity_help">HelpActivity</string>
+
+    <string name="help_message">左下角三个按钮分别为前进,刹车,后退\n右下角区域通过滑动控制方向\n右上角按钮为开始/暂停</string>
 </resources>

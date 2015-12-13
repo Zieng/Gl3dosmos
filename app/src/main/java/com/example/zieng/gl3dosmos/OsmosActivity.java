@@ -1,6 +1,7 @@
 package com.example.zieng.gl3dosmos;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
@@ -19,13 +20,16 @@ public class OsmosActivity extends Activity
 {
 
     private GLSurfaceView osmosView;
-    int level = 5 ;
+    int level;
+    public Intent i;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
 
+        i = getIntent();
+        level = i.getExtras().getInt("level");
 
         // get a display object to access screen detail
         Display display = getWindowManager().getDefaultDisplay();

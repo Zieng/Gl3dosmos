@@ -50,7 +50,7 @@ public class InputController
 
     public InputController(Context context,int screenWidth,int screenHeight)
     {
-        Log.e(TAG,"constructor: width="+screenWidth+",heigth="+screenHeight);
+//        Log.e(TAG,"constructor: width="+screenWidth+",heigth="+screenHeight);
 
         this.context = context;
         horizontalAngle = 3.14159f;
@@ -61,17 +61,7 @@ public class InputController
         up = new Point3F();
         face = new Point3F();
 
-        face.x =  (float)Math.cos(verticalAngle)*(float)Math.sin(horizontalAngle);
-        face.y =  (float)Math.sin(verticalAngle);
-        face.z =  (float)Math.cos(verticalAngle)*(float)Math.cos(horizontalAngle);
-
-        right.x = (float)Math.sin(horizontalAngle - 1.571f);
-        right.y = 0;
-        right.z = (float)Math.cos(horizontalAngle - 1.571f);
-
-        up.x =  - right.z * face.y;
-        up.y = right.z*face.x - right.x * face.z;
-        up.z = right.x * face.y;
+        calculate_vector();
 
 
         float buttonWidth=screenWidth/8;
@@ -130,6 +120,21 @@ public class InputController
 //        currentButtonList.add(dragArea);
 
         return currentButtonList;
+    }
+
+    public void calculate_vector()
+    {
+        face.x =  (float)Math.cos(verticalAngle)*(float)Math.sin(horizontalAngle);
+        face.y =  (float)Math.sin(verticalAngle);
+        face.z =  (float)Math.cos(verticalAngle)*(float)Math.cos(horizontalAngle);
+
+        right.x = (float)Math.sin(horizontalAngle - 1.571f);
+        right.y = 0;
+        right.z = (float)Math.cos(horizontalAngle - 1.571f);
+
+        up.x =  - right.z * face.y;
+        up.y = right.z*face.x - right.x * face.z;
+        up.z = right.x * face.y;
     }
 
     public void handleInput(MotionEvent motionEvent,GameManager gm,SoundManager sm)
@@ -213,7 +218,7 @@ public class InputController
                         gm.switch_play_status();
                         thrustPressed = false;
                         backwardsPressed = false;
-                        Log.e(TAG,"you click the pause at ("+x+","+y+")");
+                        Log.e(TAG,"clicked pause, current state = "+ gm.is_playing() );
 
                         Log.e(TAG,"hori-angle="+horizontalAngle);
                         Log.e(TAG,"vert-angle="+verticalAngle);
@@ -240,17 +245,7 @@ public class InputController
                         verticalAngle   -= angleSpeed * dy;
 //                        Log.e(TAG,"subsequent h-angle="+horizontalAngle+"\t,v-angle="+verticalAngle);
 
-                        face.x =  (float)Math.cos(verticalAngle)*(float)Math.sin(horizontalAngle);
-                        face.y =  (float)Math.sin(verticalAngle);
-                        face.z =  (float)Math.cos(verticalAngle)*(float)Math.cos(horizontalAngle);
-
-                        right.x = (float)Math.sin(horizontalAngle - 1.571f);
-                        right.y = 0;
-                        right.z = (float)Math.cos(horizontalAngle - 1.571f);
-
-                        up.x =  - right.z * face.y;
-                        up.y = right.z*face.x - right.x * face.z;
-                        up.z = right.x * face.y;
+                        calculate_vector();
 
                     }
                     else

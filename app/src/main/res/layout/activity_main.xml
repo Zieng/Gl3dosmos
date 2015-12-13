@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main_menu_layout0"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:layout_centerVertical="true"
+    android:background="@mipmap/moon"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/main_menu_layout"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+
+            android:id="@+id/start"
+            android:layout_width="fill_parent"
+            android:layout_height="80px"
+
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="开始游戏"
+            android:textColor="#dbf1f8"
+            android:textSize="36px"
+            android:textStyle="bold" />
+
+
+        <TextView
+            android:id="@+id/best"
+            android:layout_width="match_parent"
+            android:layout_height="80px"
+            android:layout_gravity="center"
+
+            android:gravity="center"
+            android:text="最佳成绩"
+            android:textColor="#def0f8"
+            android:textSize="36px"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/option"
+            android:layout_width="fill_parent"
+            android:layout_height="80px"
+            android:layout_gravity="center"
+
+            android:gravity="center"
+            android:text="游戏选项"
+            android:textColor="#ffffff"
+            android:textSize="36px"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/help"
+            android:layout_width="fill_parent"
+            android:layout_height="80px"
+
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="游戏帮助"
+            android:textColor="#ffffff"
+            android:textSize="36px"
+            android:textStyle="bold" />
+    </LinearLayout>
+</LinearLayout>

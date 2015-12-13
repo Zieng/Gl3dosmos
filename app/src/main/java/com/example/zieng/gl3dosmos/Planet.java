@@ -238,11 +238,17 @@ public class Planet
         if(type == TYPE.CenterStar)
             return ;
 
-        if(  v.get_length() >= maxSpeed)
+        if( Math.abs(v.x) > maxSpeed )
         {
-            v.x = maxSpeed;
-            v.y = maxSpeed;
-            v.z = maxSpeed;
+            v.x = (v.x>0)?maxSpeed:-maxSpeed;
+        }
+        if( Math.abs(v.y) > maxSpeed )
+        {
+            v.y = (v.y>0)?maxSpeed:-maxSpeed;
+        }
+        if( Math.abs(v.z) > maxSpeed )
+        {
+            v.z = (v.z>0)?maxSpeed:-maxSpeed;
         }
 
         velocity.x = v.x;
@@ -250,6 +256,29 @@ public class Planet
         velocity.z = v.z;
     }
 
+    public void set_velocity(float vx,float vy,float vz)
+    {
+        if(type == TYPE.CenterStar || isActive == false )
+            return ;
+
+        if( Math.abs(vx) > maxSpeed )
+        {
+            vx = (vx>0)?maxSpeed:-maxSpeed;
+        }
+        if( Math.abs(vy) > maxSpeed )
+        {
+            vy = (vy>0)?maxSpeed:-maxSpeed;
+        }
+        if( Math.abs(vz) > maxSpeed )
+        {
+            vz = (vz>0)?maxSpeed:-maxSpeed;
+        }
+
+        velocity.x = vx;
+        velocity.y = vy;
+        velocity.z = vz;
+
+    }
     public final Point3F get_velocity()
     {
         return velocity;

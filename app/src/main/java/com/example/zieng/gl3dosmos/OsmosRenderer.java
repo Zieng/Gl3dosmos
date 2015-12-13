@@ -1,6 +1,7 @@
 package com.example.zieng.gl3dosmos;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.opengl.GLES20;
@@ -99,8 +100,11 @@ public class OsmosRenderer implements Renderer
     boolean inChaos = false;
     int gameLevel = 1;
 
+
+
     public OsmosRenderer(Context ctx,GameManager gameManager,SoundManager soundManager,InputController inputController, int level)
     {
+
         // TODO: 11/23/15 OsmosRenderer
         context = ctx;
         gm = gameManager;
@@ -112,7 +116,7 @@ public class OsmosRenderer implements Renderer
         long origThreadID = Thread.currentThread().getId();
         Log.e("\tOsmosRenderer::", "thread id = " + origThreadID);
 
-        Log.e("init OsmosRenderer:", "screenWidth=" + gm.screenWidth + ",screenHeight=" + gm.screenHeight);
+//        Log.e("init OsmosRenderer:", "screenWidth=" + gm.screenWidth + ",screenHeight=" + gm.screenHeight);
     }
 
     @Override
@@ -120,8 +124,8 @@ public class OsmosRenderer implements Renderer
     {
         glClearColor(0.f, 0.f, 0.f, 0.f);
 
-        Log.e("read vertex shader", LoadHelper.readTextFileFromRawResource(context, R.raw.vertex));
-        Log.e("read fragment shader", LoadHelper.readTextFileFromRawResource(context, R.raw.fragment));
+//        Log.e("read vertex shader", LoadHelper.readTextFileFromRawResource(context, R.raw.vertex));
+//        Log.e("read fragment shader", LoadHelper.readTextFileFromRawResource(context, R.raw.fragment));
 
         GLManager.buildProgram(
                 LoadHelper.readTextFileFromRawResource(context, R.raw.vertex),
@@ -133,7 +137,7 @@ public class OsmosRenderer implements Renderer
         glDepthFunc(GL_LESS);
 //        glEnable(GL_CULL_FACE);
 
-        gm.init_(100,100,100);
+        gm.init_(20,20,20);
         sm.init_();
         ic.init_();
 
@@ -183,6 +187,7 @@ public class OsmosRenderer implements Renderer
         else if( gm.remainingEnemies == 0)
         {
             gm.gameWin = true;
+
 
             Log.e(TAG,"You win!");
             //// TODO: 11/29/15 handle Game Win
@@ -290,9 +295,10 @@ public class OsmosRenderer implements Renderer
         else if( gameLevel == 2)
         {
             /*    eat others      */
-            gm.remainingEnemies = 5;
+            gm.remainingEnemies = 3;
             for(i = 0;i<gm.remainingEnemies;i++)
             {
+                boolean noCollision = true;
                 temp = new Planet(0.9, Planet.TYPE.NormalStar);
                 float xx = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
                 float yy = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
@@ -301,6 +307,20 @@ public class OsmosRenderer implements Renderer
                 temp.setWorldLocation(xx,yy,zz);
                 if( gm.player.check_collision(temp))
                 {
+                    noCollision = false;
+                }
+                for(int j=0;j<gm.stars.size();j++)
+                {
+                    if(noCollision == false)
+                        break;
+                    if( gm.stars.get(j).check_collision(temp))
+                    {
+                        noCollision = false;
+                        break;
+                    }
+                }
+                if(noCollision == false)
+                {
                     i--;
                     continue;
                 }
@@ -308,6 +328,14 @@ public class OsmosRenderer implements Renderer
             }
         }
         else if( gameLevel == 3)
+        {
+            /* catch the moving planet  */
+            gm.remainingEnemies = 1;
+            temp = new Planet(0.9, Planet.TYPE.NormalStar);
+            temp.setWorldLocation(0,0,0);
+            temp.set_velocity(0,0,-1);
+        }
+        else if( gameLevel == 4)
         {
             gm.remainingEnemies = 1;
             /*    gravity      */
@@ -318,7 +346,7 @@ public class OsmosRenderer implements Renderer
             temp.setWorldLocation(8,5,0);
             gm.stars.add(temp);
         }
-        else if( gameLevel == 4)
+        else if ( gameLevel == 5)
         {
             /*    intercept      */
             gm.remainingEnemies = 2;
@@ -334,13 +362,14 @@ public class OsmosRenderer implements Renderer
                 gm.stars.add(temp);
             }
         }
-        else if ( gameLevel == 5)
+        else if( gameLevel ==6 )
         {
             /*    repulsive     */
             gm.remainingEnemies = 1;
             temp = new Planet(0.9, Planet.TYPE.RepulsiveStar);
             gm.stars.add(temp);
         }
+
 
     }
 
@@ -448,6 +477,8 @@ public class OsmosRenderer implements Renderer
             Log.e(TAG, "P1 is at " + p1.getWorldLocation().toString());
             Log.e(TAG, "P2 is at " + p2.getWorldLocation().toString());
         }
+
+
 //    //todo set velocity change
 
 //        Point3F v1 = bigPlanet.get_velocity();
@@ -617,11 +648,8 @@ public class OsmosRenderer implements Renderer
 //        centerX = eyeX + face.x;
 //        centerY = eyeY + face.y;
 //        centerZ = eyeZ + face.z;
-        centerX = xx;
-        centerY = yy;
-        centerZ = zz;
 
-        setLookAtM(viewportMatrix,0,eyeX,eyeY,eyeZ,centerX,centerY,centerZ,up.x,up.y,up.z);
+        setLookAtM(viewportMatrix,0,eyeX,eyeY,eyeZ,xx,yy,zz,up.x,up.y,up.z);
 
         perspectiveM(projectionMatrix,0,45.0f,(float)gm.screenWidth/(float)gm.screenHeight,0.1f,100.0f);
 
