@@ -72,8 +72,9 @@ public class Planet
     TYPE type;
 
     double radius;
+    double volume;
     final double min_radius = 0.1;
-    final double max_radius = 10;
+    final double max_radius = 3;
 
 //    static int worldXScale;
 //    static int worldYScale;
@@ -303,6 +304,7 @@ public class Planet
 
 //        Log.e(TAG,"Set radisu from "+radius+" to "+r);
         radius = (r>max_radius)?max_radius:r;
+        volume = Math.pow(radius,3);
 
         refresh_model_matrix();
     }
@@ -423,6 +425,11 @@ public class Planet
             return true;
 
         return false;
+    }
+
+    public double getVolume()
+    {
+        return volume;
     }
 
     public Point3F getWorldLocation()
