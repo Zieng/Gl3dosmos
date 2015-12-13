@@ -2,6 +2,8 @@ package com.example.zieng.gl3dosmos;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.media.MediaPlayer;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -14,6 +16,7 @@ public class MainActivity extends Activity {
     private TextView start;
     private TextView option;
     private TextView help;
+    private BackgroundSound BGM;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,6 +49,8 @@ public class MainActivity extends Activity {
                 startActivity(new Intent(MainActivity.this, HelpActivity.class));
             }
         });
+
+        BGM = new BackgroundSound();
 
     }
 
@@ -80,5 +85,17 @@ public class MainActivity extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public class BackgroundSound extends AsyncTask<Void, Void, Void>
+    {
+        @Override
+        protected Void doInBackground(Void... params) {
+            MediaPlayer player = MediaPlayer.create(MainActivity.this, R.raw.bg);
+            player.setLooping(true); // Set looping
+            player.setVolume(100,100);
+            player.start();
+            return null;
+        }
     }
 }

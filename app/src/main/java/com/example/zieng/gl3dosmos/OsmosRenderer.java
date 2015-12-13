@@ -257,7 +257,7 @@ public class OsmosRenderer implements Renderer
         int i=0;
         for(RectF rect:buttonsToDraw)
         {
-            Log.e(TAG,"create a button:top="+rect.top+",left="+rect.left+",bottom="+rect.bottom+",right="+rect.right);
+//            Log.e(TAG,"create a button:top="+rect.top+",left="+rect.left+",bottom="+rect.bottom+",right="+rect.right);
             gameButtons[i] = new GameButton(gm,rect.top,rect.left,rect.bottom,rect.right);
             i++;
         }
@@ -675,7 +675,8 @@ public class OsmosRenderer implements Renderer
         {
             Log.e(TAG,"Reach the border!!!! Bounce!!!\t"+t.toString());
             planet.set_velocity(v);
-            planet.setWorldLocation(t.x,t.y,t.z);
+            planet.setWorldLocation(t.x, t.y, t.z);
+            sm.playSound("bounce");
         }
     }
 
@@ -760,6 +761,7 @@ public class OsmosRenderer implements Renderer
 //        bigPlanet.set_velocity( v3 );
 
         lastCollisionTime = currentCollisionTIme;
+        sm.playSound("absorption");
     }
 
     public void field_effect(Planet p1, Planet p2)

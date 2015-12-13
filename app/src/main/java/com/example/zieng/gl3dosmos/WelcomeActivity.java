@@ -2,6 +2,8 @@ package com.example.zieng.gl3dosmos;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.media.MediaPlayer;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -47,4 +49,5 @@ public class WelcomeActivity extends Activity {
 
         return super.onOptionsItemSelected(item);
     }
+
 }

@@ -161,7 +161,7 @@ public class Planet
         normalBuffer = share_normalBuffer;
         vertexBuffer = share_vertexBuffer;
 
-        Log.e(TAG,"create a plant with radius="+radius+",texture="+textureId);
+//        Log.e(TAG,"create a plante with radius="+radius+",texture="+textureId);
 
     }
 
@@ -316,7 +316,7 @@ public class Planet
 
     void move(float fps)
     {
-        Log.e(TAG,"fps = "+fps);
+//        Log.e(TAG,"fps = "+fps);
         float updateRate = 1 / fps ;
 
 //        Log.e(TAG,"Move planet from "+worldLocation.toString());
