@@ -67,20 +67,20 @@ public class Point3F extends PointF
 
     public Point3F multiply(float d )
     {
-        x *= d;
-        y *= d;
-        z *= d;
+        float xx = x*d;
+        float yy = y*d;
+        float zz = z*d;
 
-        return new Point3F(x,y,z);
+        return new Point3F(xx,yy,zz);
     }
 
     public Point3F multiply( Point3F other)
     {
-        x *= other.x;
-        y *= other.y;
-        z *= other.z;
+        float xx = x * other.x;
+        float yy = y * other.y;
+        float zz = z * other.z;
 
-        return new Point3F(x,y,z);
+        return new Point3F(xx,yy,zz);
     }
 
     public Point3F reverse()

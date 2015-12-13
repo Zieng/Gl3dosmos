@@ -16,7 +16,7 @@ import static android.opengl.Matrix.setLookAtM;
  */
 public class InputController
 {
-    boolean noChild = true ;
+    boolean noChild = false ;
 
     private static final String TAG = "InputController";
     Context context;

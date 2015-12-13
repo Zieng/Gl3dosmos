@@ -112,8 +112,6 @@ public class Planet
     int [] uvBuffer = new int[1];
     int [] normalBuffer = new int[1];
 
-    boolean scaleChange = false;   // to reduce the matrix computation
-    private float [] self_scaleMatrix = new float[16];
     private float [] self_modelMatrix = new float[16];
 
     boolean isActive = false;
@@ -140,14 +138,14 @@ public class Planet
             Log.e("Planet::check location","vertex location = "+GLManager.glsl_vertexPosition+",uv location = "+GLManager.glsl_vertexUV);
         }
 
-        worldLocation = new Point3F(0,0,0);
-        setWorldLocation(0,0,0);
+
 
         velocity = new Point3F(0,0,0);
-
         this.radius = radius;
         type = t;
         isActive = true;
+        worldLocation = new Point3F(0,0,0);
+        setWorldLocation(0,0,0);
 
 
         if(planetInitOK == false || plaentTermiate == true)
@@ -209,6 +207,21 @@ public class Planet
         }
     }
 
+    public void refresh_model_matrix()
+    {
+        float [] scaleMatrix = new float[16];
+        float [] translateMatrix = new float[16];
+
+        setIdentityM(self_modelMatrix, 0);
+        setIdentityM(scaleMatrix,0);
+        setIdentityM(translateMatrix,0);
+
+        scaleM(scaleMatrix, 0, (float)radius, (float)radius,(float) radius);
+        translateM(translateMatrix,0,worldLocation.x,worldLocation.y,worldLocation.z);
+
+        multiplyMM(self_modelMatrix,0,translateMatrix,0,scaleMatrix,0);  // self_ModelMatrix = translateMatrix * scaleMatrix
+    }
+
     public void setWorldLocation(float x, float y, float z)
     {
         if( type == TYPE.CenterStar)
@@ -218,15 +231,10 @@ public class Planet
         this.worldLocation.y = y;
         this.worldLocation.z = z;
 
-        setIdentityM(self_modelMatrix, 0);
-        scaleM(self_modelMatrix, 0, (float)radius,(float) radius,(float) radius);
-        translateM(self_modelMatrix,0,worldLocation.x,worldLocation.y,worldLocation.z);
+        refresh_model_matrix();
     }
 
-    public Point3F getWorldLocation()
-    {
-        return worldLocation;
-    }
+
     public void set_type(TYPE t)
     {
         type = t;
@@ -279,6 +287,7 @@ public class Planet
         velocity.z = vz;
 
     }
+
     public final Point3F get_velocity()
     {
         return velocity;
@@ -295,9 +304,7 @@ public class Planet
 //        Log.e(TAG,"Set radisu from "+radius+" to "+r);
         radius = (r>max_radius)?max_radius:r;
 
-        setIdentityM(self_modelMatrix, 0);
-        scaleM(self_modelMatrix, 0, (float)radius, (float)radius,(float) radius);
-        translateM(self_modelMatrix,0,worldLocation.x,worldLocation.y,worldLocation.z);
+        refresh_model_matrix();
     }
 
     public void set_active(boolean active)
@@ -307,33 +314,29 @@ public class Planet
 
     void move(float fps)
     {
-//        Log.e(TAG,"fps = "+fps);
-        float updataRate = 1 / fps ;
+        Log.e(TAG,"fps = "+fps);
+        float updateRate = 1 / fps ;
 
 //        Log.e(TAG,"Move planet from "+worldLocation.toString());
+//        worldLocation = worldLocation.add( velocity.multiply(updateRate) );
         if(velocity.x != 0)
         {
-//            Log.e(TAG,"update position-X");
-            worldLocation.x += velocity.x * updataRate;
+            worldLocation.x += velocity.x * updateRate;
         }
 
         if(velocity.y != 0)
         {
-//            Log.e(TAG,"update position-Y");
-            worldLocation.y += velocity.y * updataRate;
+            worldLocation.y += velocity.y * updateRate;
         }
 
         if(velocity.z != 0)
         {
-//            Log.e(TAG,"update position-Z");
-            worldLocation.z += velocity.z * updataRate;
+            worldLocation.z += velocity.z * updateRate;
         }
 //        Log.e(TAG,"\t to "+worldLocation.toString());
 
-        // update the self matrix
-        setIdentityM(self_modelMatrix, 0);
-        scaleM(self_modelMatrix, 0, (float)radius,(float) radius,(float) radius);
-        translateM(self_modelMatrix,0,worldLocation.x,worldLocation.y,worldLocation.z);
+
+        refresh_model_matrix();
 
     }
 
@@ -400,7 +403,7 @@ public class Planet
 //        Log.e(TAG,"glErrorCode="+glGetError());
 //        glDrawElements(GL_TRIANGLES,planet.share_indices.capacity(),GL_FLOAT,0);
 //        glDrawArrays(GL_TRIANGLES, 0, planet.share_vertices.capacity() / 3);
-        glDrawArrays(GL_TRIANGLES,0, verticesNum );
+        glDrawArrays(GL_TRIANGLES, 0, verticesNum);
 
 //        Log.e(TAG,"glErrorCode="+glGetError());
     }
@@ -420,6 +423,11 @@ public class Planet
             return true;
 
         return false;
+    }
+
+    public Point3F getWorldLocation()
+    {
+        return worldLocation;
     }
 
     public boolean get_active_status()
@@ -542,6 +550,7 @@ public class Planet
     public void setWorldLocation(Point3F position)
     {
         worldLocation = new Point3F(position);
+        refresh_model_matrix();
     }
 
     public void print_data()
