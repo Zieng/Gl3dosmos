@@ -33,38 +33,47 @@ public class SoundManager
     public void loadSound()
     {
         soundPool = new SoundPool(10, AudioManager.STREAM_MUSIC,0);
-        try
-        {
-            AssetManager assetManager = context.getAssets();
-            AssetFileDescriptor descriptor;
+//        try
+//        {
+//            AssetManager assetManager = context.getAssets();
+//            AssetFileDescriptor descriptor;
+//
+////            descriptor = assetManager.openFd("thrust.wav");    //create fx
+////            thrust = soundPool.load(descriptor, 0);
+//
+////            descriptor = assetManager.openFd("thrust.wav");
+////            thrust = soundPool.load(descriptor, 0);
+////
+////            descriptor=assetManager.openFd("absorption.wav");
+////            absorption = soundPool.load(descriptor, 0);
+////
+////            descriptor=assetManager.openFd("bounce.wav");
+////            bounce=soundPool.load(descriptor, 0);
+////
+////            descriptor=assetManager.openFd("brake.wav");
+////            brake=soundPool.load(descriptor, 0);
+////
+////            descriptor=assetManager.openFd("win.wav");
+////            win=soundPool.load(descriptor, 0);
+////
+////            descriptor=assetManager.openFd("gameover.wav");
+////            gameover=soundPool.load(descriptor, 0);
+//
+//
+//
+//        }
+//        catch (IOException e)
+//        {
+//            Log.e("error", "failed to load sound files");
+//        }
 
-            descriptor = assetManager.openFd("thrust.wav");    //create fx
-            thrust = soundPool.load(descriptor, 0);
 
-            descriptor = assetManager.openFd("thrust.wav");
-            thrust = soundPool.load(descriptor, 0);
-
-            descriptor=assetManager.openFd("absorption.wav");
-            absorption = soundPool.load(descriptor, 0);
-
-            descriptor=assetManager.openFd("bounce.wav");
-            bounce=soundPool.load(descriptor, 0);
-
-            descriptor=assetManager.openFd("brake.wav");
-            brake=soundPool.load(descriptor, 0);
-
-            descriptor=assetManager.openFd("win.wav");
-            win=soundPool.load(descriptor, 0);
-
-            descriptor=assetManager.openFd("gameover.wav");
-            gameover=soundPool.load(descriptor,0);
-
-
-        }
-        catch (IOException e)
-        {
-            Log.e("error", "failed to load sound files");
-        }
+        thrust = soundPool.load(context,R.raw.thrust,1);
+        absorption = soundPool.load(context,R.raw.absorption,1);
+        win = soundPool.load(context,R.raw.win,1);
+        brake = soundPool.load(context,R.raw.brake,1);
+        bounce = soundPool.load(context,R.raw.bounce,1);
+        gameover = soundPool.load(context,R.raw.gameover,1);
     }
 
     public void playSound(String sound)

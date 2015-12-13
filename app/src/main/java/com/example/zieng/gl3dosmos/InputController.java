@@ -178,6 +178,8 @@ public class InputController
 
                         gm.player.set_velocity(v);
 
+                        sm.playSound("thrust");
+
                     }
                     else if( brake.contains(x,y) && gm.is_playing() )
                     {
@@ -191,6 +193,7 @@ public class InputController
                             v = v.multiply(0.9f);
                             gm.player.set_velocity(  v  );
                         }
+                        sm.playSound("brake");
                     }
                     else if( backwards.contains(x,y) && gm.is_playing() )
                     {
@@ -210,6 +213,7 @@ public class InputController
                         generate_child_planet(gm,false);
 
                         gm.player.set_velocity(v);
+                        sm.playSound("thrust");
 
                     }
                     else if( pause.contains(x,y))
@@ -220,8 +224,8 @@ public class InputController
                         backwardsPressed = false;
                         Log.e(TAG,"clicked pause, current state = "+ gm.is_playing() );
 
-                        Log.e(TAG,"hori-angle="+horizontalAngle);
-                        Log.e(TAG,"vert-angle="+verticalAngle);
+//                        Log.e(TAG,"hori-angle="+horizontalAngle);
+//                        Log.e(TAG,"vert-angle="+verticalAngle);
                     }
                     break;
                 }

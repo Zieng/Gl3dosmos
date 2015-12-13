@@ -6,10 +6,13 @@ import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+
+import java.util.IllegalFormatCodePointException;
 
 public class MainActivity extends Activity {
     private int level = 1;
@@ -17,6 +20,8 @@ public class MainActivity extends Activity {
     private TextView option;
     private TextView help;
     private BackgroundSound BGM;
+    MediaPlayer mp;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,6 +54,18 @@ public class MainActivity extends Activity {
                 startActivity(new Intent(MainActivity.this, HelpActivity.class));
             }
         });
+
+        //        mp = MediaPlayer.create(this, R.raw.bg);
+//        mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+//
+//            @Override
+//            public void onCompletion(MediaPlayer mp) {
+//                // TODO Auto-generated method stub
+//                mp.release();
+//            }
+//
+//        });
+//        mp.start();
 
         BGM = new BackgroundSound();
 
@@ -87,14 +104,40 @@ public class MainActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    protected void onPause()
+    {
+        super.onPause();
+        BGM.cancel(true);
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        try{
+            BGM.execute();
+        }
+        catch (IllegalStateException ex)
+        {
+            Log.e("BGM","Cannot execute task");
+        }
+
+    }
+
     public class BackgroundSound extends AsyncTask<Void, Void, Void>
     {
         @Override
-        protected Void doInBackground(Void... params) {
-            MediaPlayer player = MediaPlayer.create(MainActivity.this, R.raw.bg);
-            player.setLooping(true); // Set looping
-            player.setVolume(100,100);
-            player.start();
+        protected Void doInBackground(Void... params)
+        {
+//            Log.e("BGM", "do in background");
+//            int resID = OsmosActivity.this.getResources().getIdentifier("bg", "raw", OsmosActivity.this.getPackageName());
+//            MediaPlayer player = MediaPlayer.create(OsmosActivity.this, resID);
+
+            mp = MediaPlayer.create(MainActivity.this, R.raw.bg);
+            mp.setLooping(true); // Set looping
+            mp.setVolume(100, 100);
+            mp.start();
             return null;
         }
     }

@@ -27,14 +27,14 @@ public class OsmosActivity extends Activity
     private GLSurfaceView osmosView;
     int level;
     public Intent i;
-    private BackgroundSound BGM;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
 
-        BGM = new BackgroundSound();
+
 //        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 //        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 20, 0);
 
@@ -59,7 +59,6 @@ public class OsmosActivity extends Activity
     {
         super.onPause();
         osmosView.onPause();
-        BGM.cancel(true);
     }
 
     @Override
@@ -67,23 +66,8 @@ public class OsmosActivity extends Activity
     {
         super.onResume();
         osmosView.onResume();
-        BGM.execute();
     }
 
-    public class BackgroundSound extends AsyncTask<Void, Void, Void>
-    {
-        @Override
-        protected Void doInBackground(Void... params)
-        {
-            Log.e("BGM", "do in background");
-            int resID = OsmosActivity.this.getResources().getIdentifier("bg", "raw", OsmosActivity.this.getPackageName());
-            MediaPlayer player = MediaPlayer.create(OsmosActivity.this, resID);
-//            MediaPlayer player = MediaPlayer.create(OsmosActivity.this, R.raw.bg);
-            player.setLooping(true); // Set looping
-            player.setVolume(100,100);
-            player.start();
-            return null;
-        }
-    }
+
 
 }

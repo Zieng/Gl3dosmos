@@ -71,7 +71,7 @@ public class OsmosRenderer implements Renderer
     float centerY = 0 ;
     float centerZ = 0 ;
 
-    double lastCollisionTime;
+    double startTime;
 
     boolean inChaos = false;
     int gameLevel = 1;
@@ -82,6 +82,9 @@ public class OsmosRenderer implements Renderer
     // game type
     boolean becomeBiggest = false;
     boolean destroyEnemies = false;
+
+    double score;
+    boolean playEndSound = false;
 
     public OsmosRenderer(Context ctx,GameManager gameManager,SoundManager soundManager,InputController inputController, int level)
     {
@@ -124,8 +127,7 @@ public class OsmosRenderer implements Renderer
 
         createObjects();
 
-        lastCollisionTime = System.currentTimeMillis();
-//        Log.e(TAG,"crashed after create objects??");
+        startTime = System.currentTimeMillis();
     }
 
     @Override
@@ -162,24 +164,54 @@ public class OsmosRenderer implements Renderer
         {
             gm.gameOver = true;
 
-            Log.e(TAG,"You lose!");
+//            Log.e(TAG,"You lose!");
             // TODO: 11/29/15 handle Game over
+            if( !playEndSound )
+            {
+                sm.playSound("gameover");
+                playEndSound = true;
+
+                score = 0;
+            }
+
         }
         else if( gm.remainingEnemies == 0 && destroyEnemies )
         {
             gm.gameWin = true;
 
 
-            Log.e(TAG,"You win! destroy all enemies ");
+//            Log.e(TAG,"You win! destroy all enemies ");
             //// TODO: 11/29/15 handle Game Win
+            if(!playEndSound)
+            {
+                sm.playSound("win");
+                playEndSound = true;
+                double deltaTime = System.currentTimeMillis() - startTime;
+
+                score = 1000000 * gm.player.getVolume()/deltaTime;
+
+//                Log.e(TAG,"deltaTime="+deltaTime+",radius="+gm.player.get_radius());
+                Log.e(TAG,"score="+score);
+            }
 
         }
         else if ( isBiggest && becomeBiggest )
         {
             gm.gameWin = true;
 
-            Log.e(TAG,"You win! you becomes the isBiggest!");
+//            Log.e(TAG, "You win! you becomes the isBiggest!");
             //// TODO: 12/13/15 handle game win
+            if(!playEndSound)
+            {
+                sm.playSound("win");
+                playEndSound = true;
+
+                double deltaTime = System.currentTimeMillis() - startTime;
+
+                score = 1000000 * gm.player.getVolume()/deltaTime;
+
+                Log.e(TAG,"score="+score);
+            }
         }
 
 
@@ -685,7 +717,6 @@ public class OsmosRenderer implements Renderer
 
         Log.e(TAG,"----------------Handle Collision----------------");
 
-        double currentCollisionTIme = System.currentTimeMillis();
 
         if(p1.isActive== false || p2.isActive== false)
             return ;
@@ -696,8 +727,6 @@ public class OsmosRenderer implements Renderer
         Planet smallPlanet = flag?p2:p1;
 
         //todo handle collision
-        double deltaTime = currentCollisionTIme - lastCollisionTime;
-        Log.e(TAG,"handle_collision::deltaTime="+deltaTime);
 
         //todo how to use glm::distance
 //        float  distance = glm::distance( p1.worldLocation,  p2.worldLocation);
@@ -760,7 +789,6 @@ public class OsmosRenderer implements Renderer
 
 //        bigPlanet.set_velocity( v3 );
 
-        lastCollisionTime = currentCollisionTIme;
         sm.playSound("absorption");
     }
 
