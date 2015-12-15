@@ -47,21 +47,21 @@ public class GLManager
     public static int buildProgram(String vertexShader, String fragmentShader)
     {
         long origThreadID = Thread.currentThread().getId();
-        Log.e(TAG,"thread id = "+origThreadID);
+//        Log.e(TAG,"thread id = "+origThreadID);
 
-        Log.e(TAG,"link program.....");
+//        Log.e(TAG,"link program.....");
         return linkProgram(compileVertexShader(vertexShader), compileFragmentShader(fragmentShader));
     }
 
     private static int compileVertexShader(String vertexShader)
     {
-        Log.e("GLManager","compile vertex shader....");
+//        Log.e("GLManager","compile vertex shader....");
         return compileShader(GL_VERTEX_SHADER,vertexShader);
     }
 
     private static int compileFragmentShader(String fragmentShader)
     {
-        Log.e("GLManager","compile fragment shader.....");
+//        Log.e("GLManager","compile fragment shader.....");
         return compileShader(GL_FRAGMENT_SHADER,fragmentShader);
     }
 
@@ -88,8 +88,8 @@ public class GLManager
             Log.e(TAG,"glCreateProgram() return 0");
         }
 
-        Log.e("check vertex shader",glGetShaderInfoLog(vertexShader));
-        Log.e("check fragment shader", glGetShaderInfoLog(fragmentShader));
+//        Log.e("check vertex shader",glGetShaderInfoLog(vertexShader));
+//        Log.e("check fragment shader", glGetShaderInfoLog(fragmentShader));
 
         glAttachShader(program, vertexShader);
         glAttachShader(program, fragmentShader);
@@ -109,10 +109,10 @@ public class GLManager
 
         GLManager.glsl_vertexPosition = glGetAttribLocation(program, "vertexPosition_modelspace");
         GLManager.glsl_vertexUV = glGetAttribLocation(program,"vertexUV");
-
-        Log.e(TAG,"-------------------------------");
-        Log.e(TAG,"link is ok");
-        Log.e(TAG,"-------------------------------");
+//
+//        Log.e(TAG,"-------------------------------");
+//        Log.e(TAG,"link is ok");
+//        Log.e(TAG,"-------------------------------");
 
         return program;
     }
@@ -124,8 +124,8 @@ public class GLManager
 
         glGetProgramiv(programObjectId, GL_VALIDATE_STATUS, validateStatus, 0);
 
-        Log.e(TAG, "Results of validating program: " + validateStatus[0]);
-        Log.e(TAG,"program info:"+glGetProgramInfoLog(programObjectId) );
+//        Log.e(TAG, "Results of validating program: " + validateStatus[0]);
+//        Log.e(TAG,"program info:"+glGetProgramInfoLog(programObjectId) );
 
         return validateStatus[0] != 0;
     }

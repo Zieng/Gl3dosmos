@@ -96,7 +96,7 @@ public class LoadHelper
 
 
 
-        Log.e(TAG,"Texture Error:"+GLES20.glGetError());
+//        Log.e(TAG,"Texture Error:"+GLES20.glGetError());
         // Load the bitmap into the bound texture.
         texImage2D(GL_TEXTURE_2D, 0, bitmap, 0);
 
@@ -121,7 +121,7 @@ public class LoadHelper
 
         // Unbind from the texture.
 //        glBindTexture(GL_TEXTURE_2D, 0);
-        Log.e(TAG,"Generate a texture with ID="+textureObjectIds[0]);
+//        Log.e(TAG,"Generate a texture with ID="+textureObjectIds[0]);
 
         return textureObjectIds[0];
     }
@@ -228,11 +228,11 @@ public class LoadHelper
             objData.put("uv",out_uvs);
             objData.put("normal",out_normals);
 
-            Log.e(TAG,"vertex size="+out_vertices.size());
-            Log.e(TAG,"uv size="+out_uvs.size());
-            Log.e(TAG,"normal size="+out_normals.size());
-
-            Log.e("load obj data finished:","ready to return them");
+//            Log.e(TAG,"vertex size="+out_vertices.size());
+//            Log.e(TAG,"uv size="+out_uvs.size());
+//            Log.e(TAG,"normal size="+out_normals.size());
+//
+//            Log.e("load obj data finished:","ready to return them");
 
 
             return objData;

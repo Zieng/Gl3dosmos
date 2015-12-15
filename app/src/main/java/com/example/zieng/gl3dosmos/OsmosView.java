@@ -1,9 +1,12 @@
 package com.example.zieng.gl3dosmos;
 
 import android.content.Context;
+import android.content.Intent;
 import android.opengl.GLSurfaceView;
 import android.util.Log;
 import android.view.MotionEvent;
+
+import java.util.logging.Handler;
 
 /**
  * Created by zieng on 11/22/15.
@@ -19,10 +22,14 @@ public class OsmosView extends GLSurfaceView
     {
         super(context);
 
+
+
         gm = new GameManager(context,screenX,screenY);
         sm = new SoundManager(context);
         sm.loadSound();
         ic = new InputController(context,screenX,screenY);
+
+
 
         setEGLContextClientVersion(2);
         setRenderer(new OsmosRenderer(context, gm, sm, ic,level));

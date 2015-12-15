@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main_menu_layout0"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:layout_centerVertical="true"
+    android:background="@mipmap/bg2"
+    android:gravity="center"
+    android:orientation="horizontal">
+
+    <LinearLayout
+        android:id="@+id/main_menu_layout"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+
+        android:gravity="center"
+        android:orientation="vertical">
+
+
+        <TextView
+
+            android:layout_width="match_parent"
+            android:layout_height="80px"
+            android:layout_gravity="center"
+
+            android:gravity="center"
+            android:text=""
+            android:textColor="#def0f8"
+            android:textSize="45px"
+            android:textStyle="bold" />
+
+
+
+        <TextView
+
+            android:id="@+id/start"
+            android:layout_width="fill_parent"
+            android:layout_height="80px"
+
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="我的征途是星辰大海"
+            android:textColor="#dbf1f8"
+            android:textSize="50px" />
+
+
+
+        <TextView
+            android:id="@+id/best"
+            android:layout_width="match_parent"
+            android:layout_height="80px"
+            android:layout_gravity="center"
+
+            android:gravity="center"
+            android:text="最佳得分"
+            android:textColor="#def0f8"
+            android:textSize="50px" />
+
+        <TextView
+            android:id="@+id/help"
+            android:layout_width="fill_parent"
+            android:layout_height="80px"
+
+            android:gravity="center"
+            android:text="宇宙求生指南"
+            android:textColor="#ffffff"
+            android:textSize="50px" />
+
+        <TextView
+            android:id="@+id/about"
+            android:layout_width="fill_parent"
+            android:layout_height="80px"
+            android:layout_gravity="center"
+
+            android:gravity="center"
+            android:text="关于"
+            android:textColor="#ffffff"
+            android:textSize="50px" />
+
+
+    </LinearLayout>
+
+
+    <LinearLayout
+
+        android:layout_width="178dp"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:gravity="center"
+        android:orientation="vertical">
+
+
+        <com.example.zieng.gl3dosmos.PickerView
+            android:id="@+id/pv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right" />
+
+    </LinearLayout>
+
+
+    <TextView
+        android:layout_width="141dp"
+        android:layout_height="369dp"
+        android:id="@+id/textView3"
+        android:layout_gravity="center_vertical" />
+</LinearLayout>

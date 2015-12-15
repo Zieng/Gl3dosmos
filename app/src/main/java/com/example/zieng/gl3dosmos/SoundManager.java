@@ -20,8 +20,10 @@ public class SoundManager
 
     private int thrust = -1;
     private int absorption = -1;
-    private int nextlevel = -1;
+    private int win = -1;
     private int gameover = -1;
+    private int bounce = -1;
+    private int brake = -1;
 
     public SoundManager(Context context)
     {
@@ -36,29 +38,27 @@ public class SoundManager
 //            AssetManager assetManager = context.getAssets();
 //            AssetFileDescriptor descriptor;
 //
-//            descriptor = assetManager.openFd("shoot.ogg");    //create fx
-//            shoot = soundPool.load(descriptor, 0);
+////            descriptor = assetManager.openFd("thrust.wav");    //create fx
+////            thrust = soundPool.load(descriptor, 0);
 //
-//            descriptor = assetManager.openFd("thrust.ogg");
-//            thrust = soundPool.load(descriptor, 0);
+////            descriptor = assetManager.openFd("thrust.wav");
+////            thrust = soundPool.load(descriptor, 0);
+////
+////            descriptor=assetManager.openFd("absorption.wav");
+////            absorption = soundPool.load(descriptor, 0);
+////
+////            descriptor=assetManager.openFd("bounce.wav");
+////            bounce=soundPool.load(descriptor, 0);
+////
+////            descriptor=assetManager.openFd("brake.wav");
+////            brake=soundPool.load(descriptor, 0);
+////
+////            descriptor=assetManager.openFd("win.wav");
+////            win=soundPool.load(descriptor, 0);
+////
+////            descriptor=assetManager.openFd("gameover.wav");
+////            gameover=soundPool.load(descriptor, 0);
 //
-//            descriptor=assetManager.openFd("explode.ogg");
-//            explode = soundPool.load(descriptor, 0);
-//
-//            descriptor=assetManager.openFd("shipexplode.ogg");
-//            shipexploade=soundPool.load(descriptor, 0);
-//
-//            descriptor=assetManager.openFd("ricochet.ogg");
-//            ricochet=soundPool.load(descriptor, 0);
-//
-//            descriptor=assetManager.openFd("blip.ogg");
-//            blip=soundPool.load(descriptor, 0);
-//
-//            descriptor=assetManager.openFd("nextlevel.ogg");
-//            nextlevel=soundPool.load(descriptor, 0);
-//
-//            descriptor=assetManager.openFd("gameover.ogg");
-//            gameover=soundPool.load(descriptor,0);
 //
 //
 //        }
@@ -66,6 +66,14 @@ public class SoundManager
 //        {
 //            Log.e("error", "failed to load sound files");
 //        }
+
+
+        thrust = soundPool.load(context,R.raw.thrust,1);
+        absorption = soundPool.load(context,R.raw.absorption,1);
+        win = soundPool.load(context,R.raw.win,1);
+        brake = soundPool.load(context,R.raw.brake,1);
+        bounce = soundPool.load(context,R.raw.bounce,1);
+        gameover = soundPool.load(context,R.raw.gameover,1);
     }
 
     public void playSound(String sound)
@@ -78,11 +86,17 @@ public class SoundManager
             case "absorption":
                 soundPool.play(absorption,1,1,0,0,1);
                 break;
-            case "nextlevel":
-                soundPool.play(nextlevel,1,1,0,0,1);
+            case "win":
+                soundPool.play(win,1,1,0,0,1);
                 break;
             case "gameover":
                 soundPool.play(gameover,1,1,0,0,1);
+                break;
+            case "bounce":
+                soundPool.play(bounce,1,1,0,0,1);
+                break;
+            case "brake":
+                soundPool.play(brake,1,1,0,0,1);
                 break;
         }
     }

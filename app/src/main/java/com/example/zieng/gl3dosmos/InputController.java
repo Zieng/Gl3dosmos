@@ -5,6 +5,7 @@ import android.graphics.RectF;
 import android.support.v4.view.MotionEventCompat;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 
 import java.util.ArrayList;
 
@@ -16,7 +17,9 @@ import static android.opengl.Matrix.setLookAtM;
  */
 public class InputController
 {
-    boolean noChild = true ;
+    private ScaleGestureDetector SGD;
+    boolean noChild = false ;
+    boolean inChaos = false;
 
     private static final String TAG = "InputController";
     Context context;
@@ -48,11 +51,15 @@ public class InputController
 
     float speed = 1 ;
 
+    float viewDistance = 10.f;
+
     public InputController(Context context,int screenWidth,int screenHeight)
     {
-        Log.e(TAG,"constructor: width="+screenWidth+",heigth="+screenHeight);
+//        Log.e(TAG,"constructor: width="+screenWidth+",heigth="+screenHeight);
 
         this.context = context;
+
+        SGD = new ScaleGestureDetector(context, new ScaleListener());
         horizontalAngle = 3.14159f;
         verticalAngle = 0;
         angleSpeed = 0.001f;
@@ -61,17 +68,7 @@ public class InputController
         up = new Point3F();
         face = new Point3F();
 
-        face.x =  (float)Math.cos(verticalAngle)*(float)Math.sin(horizontalAngle);
-        face.y =  (float)Math.sin(verticalAngle);
-        face.z =  (float)Math.cos(verticalAngle)*(float)Math.cos(horizontalAngle);
-
-        right.x = (float)Math.sin(horizontalAngle - 1.571f);
-        right.y = 0;
-        right.z = (float)Math.cos(horizontalAngle - 1.571f);
-
-        up.x =  - right.z * face.y;
-        up.y = right.z*face.x - right.x * face.z;
-        up.z = right.x * face.y;
+        calculate_vector();
 
 
         float buttonWidth=screenWidth/8;
@@ -132,10 +129,24 @@ public class InputController
         return currentButtonList;
     }
 
+    public void calculate_vector()
+    {
+        face.x =  (float)Math.cos(verticalAngle)*(float)Math.sin(horizontalAngle);
+        face.y =  (float)Math.sin(verticalAngle);
+        face.z =  (float)Math.cos(verticalAngle)*(float)Math.cos(horizontalAngle);
+
+        right.x = (float)Math.sin(horizontalAngle - 1.571f);
+        right.y = 0;
+        right.z = (float)Math.cos(horizontalAngle - 1.571f);
+
+        up.x =  - right.z * face.y;
+        up.y = right.z*face.x - right.x * face.z;
+        up.z = right.x * face.y;
+    }
+
     public void handleInput(MotionEvent motionEvent,GameManager gm,SoundManager sm)
     {
 
-        // TODO: 11/22/15 handle Input
         int pointerCount = motionEvent.getPointerCount();
         boolean togglePause = false;
 
@@ -156,22 +167,29 @@ public class InputController
 
                     if(thrust.contains(x,y) && gm.is_playing() )   // button thrust is pressed
                     {
-                        // TODO: 11/25/15 thrust action
                         thrustPressed = true;
                         backwardsPressed = false;
-//                        Log.e(TAG,"you click the thrust at ("+x+","+y+")");
 
-
-//                        Log.e(TAG,"update velocity for thrust");
                         Point3F v = gm.player.get_velocity();
 
-                        v.x += face.x * speed;
-                        v.y += face.y * speed;
-                        v.z += face.z * speed;
+                        if( !inChaos )
+                        {
+                            v.x += face.x * speed;
+                            v.y += face.y * speed;
+                            v.z += face.z * speed;
+                        }
+                        else
+                        {
+                            v.x -= face.x * speed;
+                            v.y += face.y * speed;
+                            v.z -= face.z * speed;
+                        }
 
                         generate_child_planet(gm,true);
 
                         gm.player.set_velocity(v);
+
+                        sm.playSound("thrust");
 
                     }
                     else if( brake.contains(x,y) && gm.is_playing() )
@@ -186,37 +204,44 @@ public class InputController
                             v = v.multiply(0.9f);
                             gm.player.set_velocity(  v  );
                         }
+                        sm.playSound("brake");
                     }
                     else if( backwards.contains(x,y) && gm.is_playing() )
                     {
-                        //// TODO: 11/25/15 backwards action
                         thrustPressed = false;
                         backwardsPressed = true;
-//                        Log.e(TAG, "you click the backwards at (" + x + "," + y + ")");
 
-
-//                        Log.e(TAG,"update velocity for backwards");
                         Point3F v = gm.player.get_velocity();
 
-                        v.x -= face.x * speed;
-                        v.y -= face.y * speed;
-                        v.z -= face.z * speed;
+                        if( !inChaos )
+                        {
+                            v.x -= face.x * speed;
+                            v.y -= face.y * speed;
+                            v.z -= face.z * speed;
+                        }
+                        else
+                        {
+                            v.x -= face.x * speed;
+                            v.y += face.y * speed;
+                            v.z += face.z * speed;
+                        }
+
 
                         generate_child_planet(gm,false);
 
                         gm.player.set_velocity(v);
+                        sm.playSound("thrust");
 
                     }
                     else if( pause.contains(x,y))
                     {
-                        // TODO: 11/25/15 pause action
                         gm.switch_play_status();
                         thrustPressed = false;
                         backwardsPressed = false;
-                        Log.e(TAG,"you click the pause at ("+x+","+y+")");
+                        Log.e(TAG,"clicked pause, current state = "+ gm.is_playing() );
 
-                        Log.e(TAG,"hori-angle="+horizontalAngle);
-                        Log.e(TAG,"vert-angle="+verticalAngle);
+//                        Log.e(TAG,"hori-angle="+horizontalAngle);
+//                        Log.e(TAG,"vert-angle="+verticalAngle);
                     }
                     break;
                 }
@@ -228,33 +253,27 @@ public class InputController
                         final float dx = x - lastTouchX;
                         final float dy = y - lastTouchY;
 
-//                        Log.e(TAG, "Move from(" + lastTouchX + "," + lastTouchY + ") to (" + x + "," + y + ")");
-//                        Log.e(TAG, "dx= " + dx + "\tdy= " + dy);
-
                         lastTouchX = x;
                         lastTouchY = y;
 
-//                        Log.e(TAG,"previous h-angle="+horizontalAngle+"\t,v-angle="+verticalAngle);
-                        //compute the view and projection matrix according the new angle
-                        horizontalAngle -= angleSpeed * dx;
-                        verticalAngle   -= angleSpeed * dy;
-//                        Log.e(TAG,"subsequent h-angle="+horizontalAngle+"\t,v-angle="+verticalAngle);
+                        if( !inChaos )
+                        {
+                            horizontalAngle -= angleSpeed * dx;
+                            verticalAngle   -= angleSpeed * dy;
+                        }
+                        else
+                        {
+                            horizontalAngle += angleSpeed * dx;
+                            verticalAngle   += angleSpeed * dy;
+                        }
 
-                        face.x =  (float)Math.cos(verticalAngle)*(float)Math.sin(horizontalAngle);
-                        face.y =  (float)Math.sin(verticalAngle);
-                        face.z =  (float)Math.cos(verticalAngle)*(float)Math.cos(horizontalAngle);
-
-                        right.x = (float)Math.sin(horizontalAngle - 1.571f);
-                        right.y = 0;
-                        right.z = (float)Math.cos(horizontalAngle - 1.571f);
-
-                        up.x =  - right.z * face.y;
-                        up.y = right.z*face.x - right.x * face.z;
-                        up.z = right.x * face.y;
+                        calculate_vector();
 
                     }
                     else
-                        fingerDrag = false;
+                    {
+                        SGD.onTouchEvent(motionEvent);
+                    }
 
                     break;
                 }
@@ -319,7 +338,7 @@ public class InputController
         gm.player.set_radius(      Math.pow( volume-Math.pow(r,3)  ,  1.0/3.0)     );
         double R = gm.player.get_radius();
 
-        Planet child = new Planet(r, Planet.TYPE.NormalStar );
+        Planet child = new Planet(r, Planet.TYPE.ChildStar );
         Point3F offset = new Point3F(face.x, face.y , face.z);
 
         if( isThrust )
@@ -342,4 +361,18 @@ public class InputController
         gm.stars.add(child);
     }
 
+
+    private class ScaleListener
+            extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+        @Override
+        public boolean onScale(ScaleGestureDetector detector) {
+            viewDistance *= detector.getScaleFactor();
+
+            // Don't let the object get too small or too large.
+            viewDistance = Math.max(3.0f, Math.min(viewDistance, 20.0f));
+
+//            invalidate();
+            return true;
+        }
+    }
 }

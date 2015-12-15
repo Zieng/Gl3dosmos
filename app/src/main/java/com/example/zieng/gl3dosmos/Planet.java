@@ -68,12 +68,14 @@ public class Planet
         ChaosStar,
         BreatheStar,
         PlayerStar,
+        ChildStar,
     }
     TYPE type;
 
     double radius;
+    double volume;
     final double min_radius = 0.1;
-    final double max_radius = 10;
+    final double max_radius = 4;
 
 //    static int worldXScale;
 //    static int worldYScale;
@@ -95,6 +97,16 @@ public class Planet
             darkStarTexture     ,
             chaosStarTexture    ,
             breatheStarTexture  ,
+            normalStarTexture_weak,
+            repulsiveStarTexture_weak,
+            chaosStarTexture_weak,
+            nutriStarTexture_weak,
+            breatheStarTexture_weak,
+            swallowStarTexture_weak,
+            invisibleStarTexture_weak,
+            swiftStarTexture_weak,
+            darkStarTexture_weak,
+            childStarTexture,
             undefinedTexture    ;
 
     static int verticesNum = 0;
@@ -108,16 +120,15 @@ public class Planet
     private Point3F velocity;
 
     int textureId;
+    int textureId_weak;
     int [] vertexBuffer = new int[1];
     int [] uvBuffer = new int[1];
     int [] normalBuffer = new int[1];
 
-    boolean scaleChange = false;   // to reduce the matrix computation
-    private float [] self_scaleMatrix = new float[16];
     private float [] self_modelMatrix = new float[16];
 
     boolean isActive = false;
-    // TODO: 11/22/15 Planet class
+    boolean isWeak = false;
 
     public Planet(double radius, TYPE t)
     {
@@ -140,14 +151,14 @@ public class Planet
             Log.e("Planet::check location","vertex location = "+GLManager.glsl_vertexPosition+",uv location = "+GLManager.glsl_vertexUV);
         }
 
-        worldLocation = new Point3F(0,0,0);
-        setWorldLocation(0,0,0);
+
 
         velocity = new Point3F(0,0,0);
-
         this.radius = radius;
         type = t;
         isActive = true;
+        worldLocation = new Point3F(0,0,0);
+        setWorldLocation(0,0,0);
 
 
         if(planetInitOK == false || plaentTermiate == true)
@@ -162,7 +173,7 @@ public class Planet
         normalBuffer = share_normalBuffer;
         vertexBuffer = share_vertexBuffer;
 
-        Log.e(TAG,"create a plant with radius="+radius+",texture="+textureId);
+//        Log.e(TAG,"create a plante with radius="+radius+",texture="+textureId);
 
     }
 
@@ -172,41 +183,72 @@ public class Planet
         {
             case PlayerStar:
                 textureId = playerStarTexture;
+                textureId_weak = textureId;
+                break;
+            case ChildStar:
+                textureId = childStarTexture;
+                textureId_weak = textureId;
                 break;
             case CenterStar:
                 textureId = centerStarTexture;
+                textureId_weak = textureId;
                 break;
             case NormalStar:
                 textureId = normalStarTexture;
+                textureId_weak = nutriStarTexture;
                 break;
             case InvisibleStar:
                 textureId = invisibleStarTexture;
+                textureId_weak = invisibleStarTexture_weak;
                 break;
             case RepulsiveStar:
                 textureId = repulsiveStarTexture;
+                textureId_weak = repulsiveStarTexture_weak;
                 break;
             case SwallowStar:
                 textureId = swallowStarTexture;
+                textureId_weak = swallowStarTexture_weak ;
                 break;
             case SwiftStar:
                 textureId = swiftStarTexture;
+                textureId_weak = swiftStarTexture_weak;
                 break;
             case NutriStar:
                 textureId = nutriStarTexture;
+                textureId_weak = nutriStarTexture_weak;
                 break;
             case ChaosStar:
                 textureId = chaosStarTexture;
+                textureId_weak = chaosStarTexture_weak;
                 break;
             case DarkStar:
                 textureId = darkStarTexture;
+                textureId_weak = darkStarTexture_weak;
                 break;
             case BreatheStar:
                 textureId = breatheStarTexture;
+                textureId_weak = breatheStarTexture_weak;
                 break;
             default:
                 textureId = undefinedTexture;
+                textureId_weak = undefinedTexture;
                 break;
         }
+    }
+
+    public void refresh_model_matrix()
+    {
+        float [] scaleMatrix = new float[16];
+        float [] translateMatrix = new float[16];
+
+        setIdentityM(self_modelMatrix, 0);
+        setIdentityM(scaleMatrix,0);
+        setIdentityM(translateMatrix,0);
+
+        scaleM(scaleMatrix, 0, (float)radius, (float)radius,(float) radius);
+        translateM(translateMatrix,0,worldLocation.x,worldLocation.y,worldLocation.z);
+
+        multiplyMM(self_modelMatrix,0,translateMatrix,0,scaleMatrix,0);  // self_ModelMatrix = translateMatrix * scaleMatrix
     }
 
     public void setWorldLocation(float x, float y, float z)
@@ -218,15 +260,10 @@ public class Planet
         this.worldLocation.y = y;
         this.worldLocation.z = z;
 
-        setIdentityM(self_modelMatrix, 0);
-        scaleM(self_modelMatrix, 0, (float)radius,(float) radius,(float) radius);
-        translateM(self_modelMatrix,0,worldLocation.x,worldLocation.y,worldLocation.z);
+        refresh_model_matrix();
     }
 
-    public Point3F getWorldLocation()
-    {
-        return worldLocation;
-    }
+
     public void set_type(TYPE t)
     {
         type = t;
@@ -238,16 +275,46 @@ public class Planet
         if(type == TYPE.CenterStar)
             return ;
 
-        if(  v.get_length() >= maxSpeed)
+        if( Math.abs(v.x) > maxSpeed )
         {
-            v.x = maxSpeed;
-            v.y = maxSpeed;
-            v.z = maxSpeed;
+            v.x = (v.x>0)?maxSpeed:-maxSpeed;
+        }
+        if( Math.abs(v.y) > maxSpeed )
+        {
+            v.y = (v.y>0)?maxSpeed:-maxSpeed;
+        }
+        if( Math.abs(v.z) > maxSpeed )
+        {
+            v.z = (v.z>0)?maxSpeed:-maxSpeed;
         }
 
         velocity.x = v.x;
         velocity.y = v.y;
         velocity.z = v.z;
+    }
+
+    public void set_velocity(float vx,float vy,float vz)
+    {
+        if(type == TYPE.CenterStar || isActive == false )
+            return ;
+
+        if( Math.abs(vx) > maxSpeed )
+        {
+            vx = (vx>0)?maxSpeed:-maxSpeed;
+        }
+        if( Math.abs(vy) > maxSpeed )
+        {
+            vy = (vy>0)?maxSpeed:-maxSpeed;
+        }
+        if( Math.abs(vz) > maxSpeed )
+        {
+            vz = (vz>0)?maxSpeed:-maxSpeed;
+        }
+
+        velocity.x = vx;
+        velocity.y = vy;
+        velocity.z = vz;
+
     }
 
     public final Point3F get_velocity()
@@ -265,10 +332,9 @@ public class Planet
 
 //        Log.e(TAG,"Set radisu from "+radius+" to "+r);
         radius = (r>max_radius)?max_radius:r;
+        volume = Math.pow(radius,3);
 
-        setIdentityM(self_modelMatrix, 0);
-        scaleM(self_modelMatrix, 0, (float)radius, (float)radius,(float) radius);
-        translateM(self_modelMatrix,0,worldLocation.x,worldLocation.y,worldLocation.z);
+        refresh_model_matrix();
     }
 
     public void set_active(boolean active)
@@ -279,51 +345,38 @@ public class Planet
     void move(float fps)
     {
 //        Log.e(TAG,"fps = "+fps);
-        float updataRate = 1 / fps ;
+        float updateRate = 1 / fps ;
 
 //        Log.e(TAG,"Move planet from "+worldLocation.toString());
+//        worldLocation = worldLocation.add( velocity.multiply(updateRate) );
         if(velocity.x != 0)
         {
-//            Log.e(TAG,"update position-X");
-            worldLocation.x += velocity.x * updataRate;
+            worldLocation.x += velocity.x * updateRate;
         }
 
         if(velocity.y != 0)
         {
-//            Log.e(TAG,"update position-Y");
-            worldLocation.y += velocity.y * updataRate;
+            worldLocation.y += velocity.y * updateRate;
         }
 
         if(velocity.z != 0)
         {
-//            Log.e(TAG,"update position-Z");
-            worldLocation.z += velocity.z * updataRate;
+            worldLocation.z += velocity.z * updateRate;
         }
 //        Log.e(TAG,"\t to "+worldLocation.toString());
 
-        // update the self matrix
-        setIdentityM(self_modelMatrix, 0);
-        scaleM(self_modelMatrix, 0, (float)radius,(float) radius,(float) radius);
-        translateM(self_modelMatrix,0,worldLocation.x,worldLocation.y,worldLocation.z);
+
+        refresh_model_matrix();
 
     }
 
     public void draw(float [] projectionMatrix, float [] viewportMatrix )
     {
-//        Log.e(TAG,"draw planet........");
-//        Log.e(TAG,"planet has texure="+textureId);
-//        Log.e(TAG,"planet at "+getWorldLocation().toString());
-
-//        print_data();
-
-
-//        Log.e(TAG,"planet vertices size="+planet.share_vertices.capacity());
-//        Log.e(TAG,"planet uvs size="+planet.share_uvs.capacity());
 
         float [] tempMatrix = new float[16];
         float [] MVP_matrix = new float[16];
 
-        multiplyMM(tempMatrix, 0, viewportMatrix, 0, self_modelMatrix , 0);  // tempMatrix = viewportModelMatrix = viewportMatrix * self_modelMatrix
+        multiplyMM(tempMatrix, 0, viewportMatrix, 0, self_modelMatrix, 0);  // tempMatrix = viewportModelMatrix = viewportMatrix * self_modelMatrix
         multiplyMM(MVP_matrix, 0, projectionMatrix, 0, tempMatrix, 0);
 
 
@@ -332,7 +385,10 @@ public class Planet
 
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, textureId);
+        if( !isWeak )
+            glBindTexture(GL_TEXTURE_2D, textureId);
+        else
+            glBindTexture(GL_TEXTURE_2D, textureId_weak );
 
         glUniform1i(GLManager.MyTextureSamplerID, 0);
         glUniformMatrix4fv(GLManager.MVPID, 1, false, MVP_matrix, 0);
@@ -371,7 +427,7 @@ public class Planet
 //        Log.e(TAG,"glErrorCode="+glGetError());
 //        glDrawElements(GL_TRIANGLES,planet.share_indices.capacity(),GL_FLOAT,0);
 //        glDrawArrays(GL_TRIANGLES, 0, planet.share_vertices.capacity() / 3);
-        glDrawArrays(GL_TRIANGLES,0, verticesNum );
+        glDrawArrays(GL_TRIANGLES, 0, verticesNum);
 
 //        Log.e(TAG,"glErrorCode="+glGetError());
     }
@@ -391,6 +447,16 @@ public class Planet
             return true;
 
         return false;
+    }
+
+    public double getVolume()
+    {
+        return volume;
+    }
+
+    public Point3F getWorldLocation()
+    {
+        return worldLocation;
     }
 
     public boolean get_active_status()
@@ -426,16 +492,36 @@ public class Planet
 //        this.context = context;
 
         playerStarTexture = LoadHelper.loadTexture(context,R.mipmap.player);
+        childStarTexture = LoadHelper.loadTexture(context,R.mipmap.child);
+
         centerStarTexture = LoadHelper.loadTexture(context,R.mipmap.sun);
         normalStarTexture = LoadHelper.loadTexture(context,R.mipmap.normal);
+        normalStarTexture_weak = LoadHelper.loadTexture(context,R.mipmap.normal_weak);
+
         repulsiveStarTexture = LoadHelper.loadTexture(context,R.mipmap.repulsive);
+        repulsiveStarTexture_weak = LoadHelper.loadTexture(context,R.mipmap.repulsive_weak);
+
         invisibleStarTexture = LoadHelper.loadTexture(context,R.mipmap.invisible);
+        invisibleStarTexture_weak =invisibleStarTexture;
+
         swiftStarTexture = LoadHelper.loadTexture(context,R.mipmap.swift);
+        swiftStarTexture_weak = swiftStarTexture;
+
         swallowStarTexture = LoadHelper.loadTexture(context,R.mipmap.swallow);
+        swallowStarTexture_weak = LoadHelper.loadTexture(context,R.mipmap.swallow_weak);
+
         nutriStarTexture = LoadHelper.loadTexture(context,R.mipmap.nutri);
+        nutriStarTexture_weak = nutriStarTexture;
+
         darkStarTexture = LoadHelper.loadTexture(context,R.mipmap.dark);
+        darkStarTexture_weak = darkStarTexture;
+
         chaosStarTexture = LoadHelper.loadTexture(context,R.mipmap.chaos);
+        chaosStarTexture_weak = LoadHelper.loadTexture(context,R.mipmap.chaos_weak);
+
         breatheStarTexture = LoadHelper.loadTexture(context,R.mipmap.breathe);
+        breatheStarTexture_weak = LoadHelper.loadTexture(context,R.mipmap.breathe_weak);
+
         undefinedTexture = LoadHelper.loadTexture(context,R.mipmap.undefined);
 
         long origThreadID = Thread.currentThread().getId();
@@ -513,6 +599,7 @@ public class Planet
     public void setWorldLocation(Point3F position)
     {
         worldLocation = new Point3F(position);
+        refresh_model_matrix();
     }
 
     public void print_data()
