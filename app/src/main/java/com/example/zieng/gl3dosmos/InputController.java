@@ -17,6 +17,7 @@ import static android.opengl.Matrix.setLookAtM;
 public class InputController
 {
     boolean noChild = false ;
+    boolean inChaos = false;
 
     private static final String TAG = "InputController";
     Context context;
@@ -161,18 +162,23 @@ public class InputController
 
                     if(thrust.contains(x,y) && gm.is_playing() )   // button thrust is pressed
                     {
-                        // TODO: 11/25/15 thrust action
                         thrustPressed = true;
                         backwardsPressed = false;
-//                        Log.e(TAG,"you click the thrust at ("+x+","+y+")");
 
-
-//                        Log.e(TAG,"update velocity for thrust");
                         Point3F v = gm.player.get_velocity();
 
-                        v.x += face.x * speed;
-                        v.y += face.y * speed;
-                        v.z += face.z * speed;
+                        if( !inChaos )
+                        {
+                            v.x += face.x * speed;
+                            v.y += face.y * speed;
+                            v.z += face.z * speed;
+                        }
+                        else
+                        {
+                            v.x -= face.x * speed;
+                            v.y += face.y * speed;
+                            v.z -= face.z * speed;
+                        }
 
                         generate_child_planet(gm,true);
 
@@ -197,18 +203,24 @@ public class InputController
                     }
                     else if( backwards.contains(x,y) && gm.is_playing() )
                     {
-                        //// TODO: 11/25/15 backwards action
                         thrustPressed = false;
                         backwardsPressed = true;
-//                        Log.e(TAG, "you click the backwards at (" + x + "," + y + ")");
 
-
-//                        Log.e(TAG,"update velocity for backwards");
                         Point3F v = gm.player.get_velocity();
 
-                        v.x -= face.x * speed;
-                        v.y -= face.y * speed;
-                        v.z -= face.z * speed;
+                        if( !inChaos )
+                        {
+                            v.x -= face.x * speed;
+                            v.y -= face.y * speed;
+                            v.z -= face.z * speed;
+                        }
+                        else
+                        {
+                            v.x -= face.x * speed;
+                            v.y += face.y * speed;
+                            v.z += face.z * speed;
+                        }
+
 
                         generate_child_planet(gm,false);
 
@@ -218,7 +230,6 @@ public class InputController
                     }
                     else if( pause.contains(x,y))
                     {
-                        // TODO: 11/25/15 pause action
                         gm.switch_play_status();
                         thrustPressed = false;
                         backwardsPressed = false;
@@ -237,17 +248,19 @@ public class InputController
                         final float dx = x - lastTouchX;
                         final float dy = y - lastTouchY;
 
-//                        Log.e(TAG, "Move from(" + lastTouchX + "," + lastTouchY + ") to (" + x + "," + y + ")");
-//                        Log.e(TAG, "dx= " + dx + "\tdy= " + dy);
-
                         lastTouchX = x;
                         lastTouchY = y;
 
-//                        Log.e(TAG,"previous h-angle="+horizontalAngle+"\t,v-angle="+verticalAngle);
-                        //compute the view and projection matrix according the new angle
-                        horizontalAngle -= angleSpeed * dx;
-                        verticalAngle   -= angleSpeed * dy;
-//                        Log.e(TAG,"subsequent h-angle="+horizontalAngle+"\t,v-angle="+verticalAngle);
+                        if( !inChaos )
+                        {
+                            horizontalAngle -= angleSpeed * dx;
+                            verticalAngle   -= angleSpeed * dy;
+                        }
+                        else
+                        {
+                            horizontalAngle += angleSpeed * dx;
+                            verticalAngle   += angleSpeed * dy;
+                        }
 
                         calculate_vector();
 

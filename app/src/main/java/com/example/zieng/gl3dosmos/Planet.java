@@ -74,7 +74,7 @@ public class Planet
     double radius;
     double volume;
     final double min_radius = 0.1;
-    final double max_radius = 3;
+    final double max_radius = 4;
 
 //    static int worldXScale;
 //    static int worldYScale;

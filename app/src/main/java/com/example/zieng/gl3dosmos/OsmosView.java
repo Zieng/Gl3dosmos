@@ -6,6 +6,8 @@ import android.opengl.GLSurfaceView;
 import android.util.Log;
 import android.view.MotionEvent;
 
+import java.util.logging.Handler;
+
 /**
  * Created by zieng on 11/22/15.
  */
@@ -15,7 +17,6 @@ public class OsmosView extends GLSurfaceView
     GameManager gm;
     SoundManager sm;
     InputController ic;
-
 
     public OsmosView(Context context, int screenX, int screenY , int level)
     {
@@ -27,6 +28,8 @@ public class OsmosView extends GLSurfaceView
         sm = new SoundManager(context);
         sm.loadSound();
         ic = new InputController(context,screenX,screenY);
+
+
 
         setEGLContextClientVersion(2);
         setRenderer(new OsmosRenderer(context, gm, sm, ic,level));

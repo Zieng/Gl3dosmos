@@ -5,8 +5,11 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="title_activity_option">OptionActivity</string>
-    <string name="title_activity_welcome">WelcomeActivity</string>
+    <string name="title_activity_welcome">Osmos</string>
     <string name="title_activity_help">HelpActivity</string>
 
     <string name="help_message">左下角三个按钮分别为前进,刹车,后退\n右下角区域通过滑动控制方向\n右上角按钮为开始/暂停</string>
+    <string name="title_activity_win">WinActivity</string>
+    <string name="title_activity_game_over">GameOverActivity</string>
+    <string name="title_activity_about">AboutActivity</string>
 </resources>

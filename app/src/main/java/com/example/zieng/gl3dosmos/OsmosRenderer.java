@@ -1,6 +1,8 @@
 package com.example.zieng.gl3dosmos;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.RectF;
 import android.opengl.GLSurfaceView.Renderer;
 import android.util.Log;
@@ -67,17 +69,12 @@ public class OsmosRenderer implements Renderer
     float eyeY = 0 ;
     float eyeZ = 0 ;
 
-    float centerX = 0 ;
-    float centerY = 0 ;
-    float centerZ = 0 ;
-
     double startTime;
 
-    boolean inChaos = false;
     int gameLevel = 1;
 
     boolean isBiggest = false;
-    double maxVolume = 0;
+    double maxVolume = 0 ;
 
     // game type
     boolean becomeBiggest = false;
@@ -151,7 +148,7 @@ public class OsmosRenderer implements Renderer
         computeMatrix();
 
         Iterator iter = gm.stars.iterator();
-        while( iter.hasNext() )
+        while( iter.hasNext() )   // remove unnecessary planets
         {
             if ( ((Planet)iter.next()).isActive == false )
             {
@@ -160,62 +157,8 @@ public class OsmosRenderer implements Renderer
             }
         }
 
-        if( gm.player.isActive == false)
-        {
-            gm.gameOver = true;
 
-//            Log.e(TAG,"You lose!");
-            // TODO: 11/29/15 handle Game over
-            if( !playEndSound )
-            {
-                sm.playSound("gameover");
-                playEndSound = true;
-
-                score = 0;
-            }
-
-        }
-        else if( gm.remainingEnemies == 0 && destroyEnemies )
-        {
-            gm.gameWin = true;
-
-
-//            Log.e(TAG,"You win! destroy all enemies ");
-            //// TODO: 11/29/15 handle Game Win
-            if(!playEndSound)
-            {
-                sm.playSound("win");
-                playEndSound = true;
-                double deltaTime = System.currentTimeMillis() - startTime;
-
-                score = 1000000 * gm.player.getVolume()/deltaTime;
-
-//                Log.e(TAG,"deltaTime="+deltaTime+",radius="+gm.player.get_radius());
-                Log.e(TAG,"score="+score);
-            }
-
-        }
-        else if ( isBiggest && becomeBiggest )
-        {
-            gm.gameWin = true;
-
-//            Log.e(TAG, "You win! you becomes the isBiggest!");
-            //// TODO: 12/13/15 handle game win
-            if(!playEndSound)
-            {
-                sm.playSound("win");
-                playEndSound = true;
-
-                double deltaTime = System.currentTimeMillis() - startTime;
-
-                score = 1000000 * gm.player.getVolume()/deltaTime;
-
-                Log.e(TAG,"score="+score);
-            }
-        }
-
-
-        if( gm.is_playing() )
+        if( gm.is_playing() )  // update if is playing
         {
             // apply field effect
             for(int i= 0;i<gm.stars.size();i++)
@@ -250,13 +193,81 @@ public class OsmosRenderer implements Renderer
                         handle_collision(gm.stars.get(i), gm.stars.get(j));
                     }
                 }
+
+                if( gm.stars.get(i).getVolume() > maxVolume )
+                    maxVolume = gm.stars.get(i).getVolume();
             }
 
             //update position
             update(fps);
+
+            isBiggest = ( gm.player.getVolume() > maxVolume );
         }
 
+        if( gm.player.isActive == false)  // check the game state
+        {
+            gm.gameOver = true;
 
+            if( !playEndSound )
+            {
+                sm.playSound("gameover");
+                playEndSound = true;
+
+                score = 0;
+            }
+
+            Score.setScore((int)score);
+            Activity ac = (Activity) context;
+            Intent i = new Intent(context, GameOverActivity.class);
+            ac.startActivity(i);
+            ac.finish();
+        }
+        else if( gm.remainingEnemies == 0 && destroyEnemies )
+        {
+            gm.gameWin = true;
+
+            if(!playEndSound)
+            {
+                sm.playSound("win");
+                playEndSound = true;
+                double deltaTime = System.currentTimeMillis() - startTime;
+
+                score = 1000000 * gm.player.getVolume()/deltaTime;
+
+//                Log.e(TAG,"deltaTime="+deltaTime+",radius="+gm.player.get_radius());
+                Log.e(TAG,"score="+score);
+            }
+
+
+            Score.setScore((int)score);
+            Activity ac = (Activity) context;
+            Intent i = new Intent(context, WinActivity.class);
+            ac.startActivity(i);
+            ac.finish();
+
+        }
+        else if ( isBiggest && becomeBiggest )
+        {
+            gm.gameWin = true;
+
+            if(!playEndSound)
+            {
+                sm.playSound("win");
+                playEndSound = true;
+
+                double deltaTime = System.currentTimeMillis() - startTime;
+
+                score = 1000000 * gm.player.getVolume()/deltaTime;
+
+                Log.e(TAG,"score="+score);
+            }
+
+            Score.setScore((int)score);
+            Activity ac = (Activity) context;
+            Intent i = new Intent(context, WinActivity.class);
+            ac.startActivity(i);
+            ac.finish();
+        }
 
         // draw all
         draw();
@@ -265,18 +276,14 @@ public class OsmosRenderer implements Renderer
         if(timeThisFrame >= 1)
             fps = 1000/timeThisFrame;
 
-//        Log.e(TAG,",player at (" + gm.player.getWorldLocation().x + "," + gm.player.getWorldLocation().y+") with radius="+gm.player.get_radius());
-
         if(debugging)
         {
-//            Log.e(TAG+frameCounter,"")
             frameCounter++;
             averageFPS += fps;
             if(frameCounter > 100)
             {
                 averageFPS /= frameCounter;
                 frameCounter = 0;
-//                Log.i("averageFPS:", "" + averageFPS + ",player at (" + gm.player.getWorldLocation().x + "," + gm.player.getWorldLocation().y+")");
             }
         }
     }
@@ -314,9 +321,10 @@ public class OsmosRenderer implements Renderer
 
         ic.noChild = !becomeBiggest;
 
+        // set game level
         switch (gameLevel)
         {
-            case 1:case 13:
+            case 1:
             {
                             /*    get to know how to play      */
                 gm.remainingEnemies = 1;
@@ -325,7 +333,7 @@ public class OsmosRenderer implements Renderer
                 gm.stars.add(temp);
                 break;
             }
-            case 2:case 14:
+            case 2:
             {
                             /*    eat others      */
                 gm.remainingEnemies = 3;
@@ -361,7 +369,7 @@ public class OsmosRenderer implements Renderer
                 }
                 break;
             }
-            case 3:case 15:
+            case 3:
             {
                 /* catch the moving planet  */
                 gm.remainingEnemies = 1;
@@ -371,7 +379,7 @@ public class OsmosRenderer implements Renderer
                 gm.stars.add(temp);
                 break;
             }
-            case 4:case 16:
+            case 4:
             {
                 gm.remainingEnemies = 1;
             /*    gravity      */
@@ -383,7 +391,7 @@ public class OsmosRenderer implements Renderer
                 gm.stars.add(temp);
                 break;
             }
-            case 5:case 17:
+            case 5:
             {
                 gm.remainingEnemies = 10;
                 for(i = 0;i<gm.remainingEnemies;i++)
@@ -419,7 +427,7 @@ public class OsmosRenderer implements Renderer
                 }
                 break;
             }
-            case 6:case 18:
+            case 6:
             {
                 /*    repulsive     */
                 gm.remainingEnemies = 1;
@@ -427,7 +435,7 @@ public class OsmosRenderer implements Renderer
                 gm.stars.add(temp);
                 break;
             }
-            case 7:case 19:
+            case 7:
             {
                 temp = new Planet(2, Planet.TYPE.CenterStar);
                 gm.stars.add(temp);
@@ -465,7 +473,7 @@ public class OsmosRenderer implements Renderer
                 }
                 break;
             }
-            case 8:case 20:
+            case 8:
             {
                 gm.remainingEnemies = 4;
                 for(i = 0;i<gm.remainingEnemies;i++)
@@ -503,7 +511,7 @@ public class OsmosRenderer implements Renderer
                 }
                 break;
             }
-            case 9:case 21:
+            case 9:
             {
                 gm.remainingEnemies = 10;
                 for(i = 0;i<gm.remainingEnemies;i++)
@@ -541,7 +549,7 @@ public class OsmosRenderer implements Renderer
                 }
                 break;
             }
-            case 10:case 22:
+            case 10:
             {
                 temp = new Planet(1.2, Planet.TYPE.CenterStar);
                 gm.stars.add(temp);
@@ -581,7 +589,7 @@ public class OsmosRenderer implements Renderer
                     gm.stars.add(temp);
                 }
             }
-            case 11:case 23:
+            case 11:
             {
                 gm.remainingEnemies = 10;
                 for(i = 0;i<gm.remainingEnemies;i++)
@@ -616,7 +624,7 @@ public class OsmosRenderer implements Renderer
                 }
                 break;
             }
-            case 12:case 24:
+            case 12:
             {
                 gm.remainingEnemies = 10;
                 for(i = 0;i<gm.remainingEnemies;i++)
@@ -630,6 +638,509 @@ public class OsmosRenderer implements Renderer
                     temp.setWorldLocation(xx,yy,zz);
                     temp.set_velocity(xx,yy,zz);
 
+                    if( gm.player.check_collision(temp))
+                    {
+                        noCollision = false;
+                    }
+                    for(int j=0;j<gm.stars.size();j++)
+                    {
+                        if(noCollision == false)
+                            break;
+                        if( gm.stars.get(j).check_collision(temp))
+                        {
+                            noCollision = false;
+                            break;
+                        }
+                    }
+                    if(noCollision == false)
+                    {
+                        i--;
+                        continue;
+                    }
+                    gm.stars.add(temp);
+                }
+                break;
+            }
+            case 13:
+            {
+                gm.remainingEnemies = 10 ;
+                for(i = 0;i<gm.remainingEnemies;i++)
+                {
+                    boolean noCollision = true;
+                    temp = new Planet(1.5f, Planet.TYPE.NormalStar);
+                    float xx = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+                    float yy = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+                    float zz = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+
+                    temp.setWorldLocation(xx,yy,zz);
+                    temp.set_velocity(xx/3.0f,yy/3.0f,zz/3.0f);
+                    if( gm.player.check_collision(temp))
+                    {
+                        noCollision = false;
+                    }
+                    for(int j=0;j<gm.stars.size();j++)
+                    {
+                        if(noCollision == false)
+                            break;
+                        if( gm.stars.get(j).check_collision(temp))
+                        {
+                            noCollision = false;
+                            break;
+                        }
+                    }
+                    if(noCollision == false)
+                    {
+                        i--;
+                        continue;
+                    }
+                    gm.stars.add(temp);
+                }
+                break;
+            }
+            case 14:
+            {
+                gm.remainingEnemies = 15 ;
+                for(i = 0;i<gm.remainingEnemies;i++)
+                {
+                    boolean noCollision = true;
+                    if( i< 10 )
+                        temp = new Planet(1.1f, Planet.TYPE.NormalStar);
+                    else
+                        temp = new Planet(2.f, Planet.TYPE.BreatheStar);
+
+                    float xx = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+                    float yy = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+                    float zz = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+
+                    temp.setWorldLocation(xx,yy,zz);
+                    temp.set_velocity(xx/3.0f,yy/3.0f,zz/3.0f);
+                    if( gm.player.check_collision(temp))
+                    {
+                        noCollision = false;
+                    }
+                    for(int j=0;j<gm.stars.size();j++)
+                    {
+                        if(noCollision == false)
+                            break;
+                        if( gm.stars.get(j).check_collision(temp))
+                        {
+                            noCollision = false;
+                            break;
+                        }
+                    }
+                    if(noCollision == false)
+                    {
+                        i--;
+                        continue;
+                    }
+                    gm.stars.add(temp);
+                }
+                break;
+            }
+            case 15:
+            {
+                gm.remainingEnemies = 10 ;
+                for(i = 0;i<gm.remainingEnemies;i++)
+                {
+                    boolean noCollision = true;
+                    if( i== 0)
+                        temp = new Planet(3, Planet.TYPE.CenterStar);
+                    else if( i < 4)
+                        temp = new Planet(2, Planet.TYPE.NormalStar);
+                    else if ( i < 8 )
+                        temp = new Planet(2.1, Planet.TYPE.ChaosStar);
+                    else
+                        temp = new Planet(1.5f, Planet.TYPE.BreatheStar );
+
+                    float xx = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+                    float yy = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+                    float zz = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+
+                    temp.setWorldLocation(xx,yy,zz);
+                    temp.set_velocity(xx/3.0f,yy/3.0f,zz/3.0f);
+                    if( gm.player.check_collision(temp))
+                    {
+                        noCollision = false;
+                    }
+                    for(int j=0;j<gm.stars.size();j++)
+                    {
+                        if(noCollision == false)
+                            break;
+                        if( gm.stars.get(j).check_collision(temp))
+                        {
+                            noCollision = false;
+                            break;
+                        }
+                    }
+                    if(noCollision == false)
+                    {
+                        i--;
+                        continue;
+                    }
+                    gm.stars.add(temp);
+                }
+                break;
+            }
+            case 16:
+            {
+                gm.remainingEnemies = 10 ;
+                for(i = 0;i<gm.remainingEnemies;i++)
+                {
+                    boolean noCollision = true;
+                    if( i== 0)
+                        temp = new Planet(2, Planet.TYPE.CenterStar);
+                    else if( i < 4)
+                        temp = new Planet(1.1f, Planet.TYPE.SwallowStar);
+                    else if ( i < 8 )
+                        temp = new Planet(1.2f, Planet.TYPE.SwiftStar);
+                    else
+                        temp = new Planet(1.7f, Planet.TYPE.BreatheStar );
+
+                    float xx = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+                    float yy = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+                    float zz = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+
+                    temp.setWorldLocation(xx,yy,zz);
+                    temp.set_velocity(xx/3.0f,yy/3.0f,zz/3.0f);
+                    if( gm.player.check_collision(temp))
+                    {
+                        noCollision = false;
+                    }
+                    for(int j=0;j<gm.stars.size();j++)
+                    {
+                        if(noCollision == false)
+                            break;
+                        if( gm.stars.get(j).check_collision(temp))
+                        {
+                            noCollision = false;
+                            break;
+                        }
+                    }
+                    if(noCollision == false)
+                    {
+                        i--;
+                        continue;
+                    }
+                    gm.stars.add(temp);
+                }
+                break;
+            }
+            case 17:
+            {
+                gm.remainingEnemies = 10 ;
+                for(i = 0;i<gm.remainingEnemies;i++)
+                {
+                    boolean noCollision = true;
+                    if( i < 4)
+                        temp = new Planet(1.1f, Planet.TYPE.NormalStar);
+                    else if ( i < 8 )
+                        temp = new Planet(1.2f, Planet.TYPE.ChaosStar);
+                    else
+                        temp = new Planet(1.5f, Planet.TYPE.BreatheStar );
+
+                    float xx = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+                    float yy = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+                    float zz = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+
+                    temp.setWorldLocation(xx,yy,zz);
+                    temp.set_velocity(xx/3.0f,yy/3.0f,zz/3.0f);
+                    if( gm.player.check_collision(temp))
+                    {
+                        noCollision = false;
+                    }
+                    for(int j=0;j<gm.stars.size();j++)
+                    {
+                        if(noCollision == false)
+                            break;
+                        if( gm.stars.get(j).check_collision(temp))
+                        {
+                            noCollision = false;
+                            break;
+                        }
+                    }
+                    if(noCollision == false)
+                    {
+                        i--;
+                        continue;
+                    }
+                    gm.stars.add(temp);
+                }
+                break;
+            }
+            case 18:
+            {
+                gm.remainingEnemies = 20 ;
+                for(i = 0;i<gm.remainingEnemies;i++)
+                {
+                    boolean noCollision = true;
+                    if( i < 4)
+                        temp = new Planet(1.1f, Planet.TYPE.NormalStar);
+                    else if ( i < 8 )
+                        temp = new Planet(1.2f, Planet.TYPE.ChaosStar);
+                    else
+                        temp = new Planet(1.5f, Planet.TYPE.BreatheStar );
+
+                    float xx = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+                    float yy = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+                    float zz = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+
+                    temp.setWorldLocation(xx,yy,zz);
+                    temp.set_velocity(xx/3.0f,yy/3.0f,zz/3.0f);
+                    if( gm.player.check_collision(temp))
+                    {
+                        noCollision = false;
+                    }
+                    for(int j=0;j<gm.stars.size();j++)
+                    {
+                        if(noCollision == false)
+                            break;
+                        if( gm.stars.get(j).check_collision(temp))
+                        {
+                            noCollision = false;
+                            break;
+                        }
+                    }
+                    if(noCollision == false)
+                    {
+                        i--;
+                        continue;
+                    }
+                    gm.stars.add(temp);
+                }
+                break;
+            }
+            case 19:
+            {
+                gm.remainingEnemies = 5 ;
+                for(i = 0;i<gm.remainingEnemies;i++)
+                {
+                    boolean noCollision = true;
+
+                    temp = new Planet(1.5f, Planet.TYPE.RepulsiveStar);
+
+                    float xx = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+                    float yy = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+                    float zz = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+
+                    temp.setWorldLocation(xx,yy,zz);
+                    temp.set_velocity(xx/3.0f,yy/3.0f,zz/3.0f);
+                    if( gm.player.check_collision(temp))
+                    {
+                        noCollision = false;
+                    }
+                    for(int j=0;j<gm.stars.size();j++)
+                    {
+                        if(noCollision == false)
+                            break;
+                        if( gm.stars.get(j).check_collision(temp))
+                        {
+                            noCollision = false;
+                            break;
+                        }
+                    }
+                    if(noCollision == false)
+                    {
+                        i--;
+                        continue;
+                    }
+                    gm.stars.add(temp);
+                }
+                break;
+            }
+            case 20:
+            {
+                gm.remainingEnemies = 15 ;
+                for(i = 0;i<gm.remainingEnemies;i++)
+                {
+                    boolean noCollision = true;
+
+                    if( i< 10 )
+                        temp = new Planet(0.99f, Planet.TYPE.RepulsiveStar);
+                    else
+                        temp = new Planet(2.0f, Planet.TYPE.RepulsiveStar);
+
+                    float xx = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+                    float yy = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+                    float zz = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+
+                    temp.setWorldLocation(xx,yy,zz);
+                    temp.set_velocity(xx/3.0f,yy/3.0f,zz/3.0f);
+                    if( gm.player.check_collision(temp))
+                    {
+                        noCollision = false;
+                    }
+                    for(int j=0;j<gm.stars.size();j++)
+                    {
+                        if(noCollision == false)
+                            break;
+                        if( gm.stars.get(j).check_collision(temp))
+                        {
+                            noCollision = false;
+                            break;
+                        }
+                    }
+                    if(noCollision == false)
+                    {
+                        i--;
+                        continue;
+                    }
+                    gm.stars.add(temp);
+                }
+                break;
+            }
+            case 21:
+            {
+                temp = new Planet(3.0f, Planet.TYPE.CenterStar);
+                gm.stars.add(temp);
+
+                gm.remainingEnemies = 10 ;
+                for(i = 0;i<gm.remainingEnemies;i++)
+                {
+                    boolean noCollision = true;
+
+                    if( i< 5 )
+                        temp = new Planet(0.99f, Planet.TYPE.ChaosStar);
+                    else
+                        temp = new Planet(2.0f, Planet.TYPE.RepulsiveStar);
+
+                    float xx = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+                    float yy = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+                    float zz = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+
+                    temp.setWorldLocation(xx,yy,zz);
+                    temp.set_velocity(xx/3.0f,yy/3.0f,zz/3.0f);
+                    if( gm.player.check_collision(temp))
+                    {
+                        noCollision = false;
+                    }
+                    for(int j=0;j<gm.stars.size();j++)
+                    {
+                        if(noCollision == false)
+                            break;
+                        if( gm.stars.get(j).check_collision(temp))
+                        {
+                            noCollision = false;
+                            break;
+                        }
+                    }
+                    if(noCollision == false)
+                    {
+                        i--;
+                        continue;
+                    }
+                    gm.stars.add(temp);
+                }
+                break;
+            }
+            case 22:
+            {
+                temp = new Planet(3.0f, Planet.TYPE.CenterStar);
+                gm.stars.add(temp);
+
+                gm.remainingEnemies = 15 ;
+                for(i = 0;i<gm.remainingEnemies;i++)
+                {
+                    boolean noCollision = true;
+
+                    if( i< 5 )
+                        temp = new Planet(0.99f, Planet.TYPE.ChaosStar);
+                    else if ( i < 9 )
+                        temp = new Planet(2.0f, Planet.TYPE.RepulsiveStar);
+                    else
+                        temp = new Planet(1.1f, Planet.TYPE.InvisibleStar );
+
+                    float xx = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+                    float yy = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+                    float zz = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+
+                    temp.setWorldLocation(xx,yy,zz);
+                    temp.set_velocity(xx/3.0f,yy/3.0f,zz/3.0f);
+                    if( gm.player.check_collision(temp))
+                    {
+                        noCollision = false;
+                    }
+                    for(int j=0;j<gm.stars.size();j++)
+                    {
+                        if(noCollision == false)
+                            break;
+                        if( gm.stars.get(j).check_collision(temp))
+                        {
+                            noCollision = false;
+                            break;
+                        }
+                    }
+                    if(noCollision == false)
+                    {
+                        i--;
+                        continue;
+                    }
+                    gm.stars.add(temp);
+                }
+                break;
+            }
+            case 23:
+            {
+                temp = new Planet(3.0f, Planet.TYPE.CenterStar);
+                gm.stars.add(temp);
+
+                gm.remainingEnemies = 15 ;
+                for(i = 0;i<gm.remainingEnemies;i++)
+                {
+                    boolean noCollision = true;
+
+                    if( i< 5 )
+                        temp = new Planet(2.0f, Planet.TYPE.ChaosStar);
+                    else if ( i < 9 )
+                        temp = new Planet(2.0f, Planet.TYPE.RepulsiveStar);
+                    else
+                        temp = new Planet(1.5f, Planet.TYPE.InvisibleStar );
+
+                    float xx = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+                    float yy = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+                    float zz = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+
+                    temp.setWorldLocation(xx,yy,zz);
+                    temp.set_velocity(xx/3.0f,yy/3.0f,zz/3.0f);
+                    if( gm.player.check_collision(temp))
+                    {
+                        noCollision = false;
+                    }
+                    for(int j=0;j<gm.stars.size();j++)
+                    {
+                        if(noCollision == false)
+                            break;
+                        if( gm.stars.get(j).check_collision(temp))
+                        {
+                            noCollision = false;
+                            break;
+                        }
+                    }
+                    if(noCollision == false)
+                    {
+                        i--;
+                        continue;
+                    }
+                    gm.stars.add(temp);
+                }
+                break;
+            }
+            case 24:
+            {
+                gm.remainingEnemies = 15 ;
+                for(i = 0;i<gm.remainingEnemies;i++)
+                {
+                    boolean noCollision = true;
+                    float size = r.nextInt(10)/5.f;
+                    if( i == 0 )
+                        temp = new Planet(size, Planet.TYPE.CenterStar );
+                    else
+                        temp = new Planet(size, Planet.TYPE.RepulsiveStar);
+                    float xx = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+                    float yy = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+                    float zz = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
+
+                    temp.setWorldLocation(xx,yy,zz);
+                    temp.set_velocity(xx/3.0f,yy/3.0f,zz/3.0f);
                     if( gm.player.check_collision(temp))
                     {
                         noCollision = false;
@@ -831,7 +1342,7 @@ public class OsmosRenderer implements Renderer
 
         if(source.type == Planet.TYPE.ChaosStar && target.type == Planet.TYPE.PlayerStar)
         {
-            inChaos = (distance <= 3* source.get_radius() )? true: false;
+            ic.inChaos = (distance <= 3* source.get_radius() )? true: false;
         }
         else if(source.type == Planet.TYPE.CenterStar && distance > 2)   // attraction
         {
@@ -884,10 +1395,6 @@ public class OsmosRenderer implements Renderer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 //        glUseProgram(GLManager.getGLProgram());
 
-
-
-
-
         gm.player.draw(projectionMatrix,viewportMatrix);
         // draw other planets
         for(int i=0;i<gm.stars.size();i++)
@@ -895,25 +1402,16 @@ public class OsmosRenderer implements Renderer
             if(gm.stars.get(i).isActive)
             {
                 gm.stars.get(i).draw(projectionMatrix,viewportMatrix);
-                if( gm.stars.get(i).getVolume() > maxVolume )
-                    maxVolume = gm.stars.get(i).getVolume();
             }
         }
 
-
         gm.WB.draw(projectionMatrix,viewportMatrix);
-
 
         // draw buttons
         for(int i=0;i<gameButtons.length;i++)
         {
-//            Log.e("OsmosRenderer","draw gameButtons"+i);
             gameButtons[i].draw();
         }
-
-
-
-        isBiggest = ( gm.player.getVolume() > maxVolume );
 
 
     }
