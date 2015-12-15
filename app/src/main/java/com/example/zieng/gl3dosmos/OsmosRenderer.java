@@ -56,8 +56,6 @@ public class OsmosRenderer implements Renderer
 
     Point3F lightPos = new Point3F();
 
-    float viewDistance = 10.0f;
-
     private GameManager gm;   // help manage current game states
     private SoundManager sm;
     private InputController ic;
@@ -74,7 +72,7 @@ public class OsmosRenderer implements Renderer
     int gameLevel = 1;
 
     boolean isBiggest = false;
-    double maxVolume = 0 ;
+    double maxVolume = 1 ;
 
     // game type
     boolean becomeBiggest = false;
@@ -194,80 +192,85 @@ public class OsmosRenderer implements Renderer
                     }
                 }
 
-                if( gm.stars.get(i).getVolume() > maxVolume )
+                double vv = gm.stars.get(i).getVolume();
+                if( vv > maxVolume && gm.stars.get(i).type!= Planet.TYPE.CenterStar )   // get the max volume of the enemies' stars
                     maxVolume = gm.stars.get(i).getVolume();
+
+                gm.stars.get(i).isWeak = vv < gm.player.getVolume();
             }
 
             //update position
             update(fps);
 
             isBiggest = ( gm.player.getVolume() > maxVolume );
-        }
 
-        if( gm.player.isActive == false)  // check the game state
-        {
-            gm.gameOver = true;
-
-            if( !playEndSound )
+            if( gm.player.isActive == false)  // check the game state
             {
-                sm.playSound("gameover");
-                playEndSound = true;
+                gm.gameOver = true;
 
-                score = 0;
+                if( !playEndSound )
+                {
+                    sm.playSound("gameover");
+                    playEndSound = true;
+
+                    score = 0;
+                }
+
+                Score.setScore((int)score);
+                Activity ac = (Activity) context;
+                Intent i = new Intent(context, GameOverActivity.class);
+                ac.startActivity(i);
+                ac.finish();
             }
-
-            Score.setScore((int)score);
-            Activity ac = (Activity) context;
-            Intent i = new Intent(context, GameOverActivity.class);
-            ac.startActivity(i);
-            ac.finish();
-        }
-        else if( gm.remainingEnemies == 0 && destroyEnemies )
-        {
-            gm.gameWin = true;
-
-            if(!playEndSound)
+            else if( gm.remainingEnemies == 0 && destroyEnemies )
             {
-                sm.playSound("win");
-                playEndSound = true;
-                double deltaTime = System.currentTimeMillis() - startTime;
+                gm.gameWin = true;
 
-                score = 1000000 * gm.player.getVolume()/deltaTime;
+                if(!playEndSound)
+                {
+                    sm.playSound("win");
+                    playEndSound = true;
+                    double deltaTime = System.currentTimeMillis() - startTime;
+
+                    score = 1000000 * gm.player.getVolume()/deltaTime;
 
 //                Log.e(TAG,"deltaTime="+deltaTime+",radius="+gm.player.get_radius());
-                Log.e(TAG,"score="+score);
+                    Log.e(TAG,"score="+score);
+                }
+
+
+                Score.setScore((int)score);
+                Activity ac = (Activity) context;
+                Intent i = new Intent(context, WinActivity.class);
+                ac.startActivity(i);
+                ac.finish();
+
             }
-
-
-            Score.setScore((int)score);
-            Activity ac = (Activity) context;
-            Intent i = new Intent(context, WinActivity.class);
-            ac.startActivity(i);
-            ac.finish();
-
-        }
-        else if ( isBiggest && becomeBiggest )
-        {
-            gm.gameWin = true;
-
-            if(!playEndSound)
+            else if ( isBiggest && becomeBiggest )
             {
-                sm.playSound("win");
-                playEndSound = true;
+                gm.gameWin = true;
 
-                double deltaTime = System.currentTimeMillis() - startTime;
+                if(!playEndSound)
+                {
+                    sm.playSound("win");
+                    playEndSound = true;
 
-                score = 1000000 * gm.player.getVolume()/deltaTime;
+                    double deltaTime = System.currentTimeMillis() - startTime;
 
-                Log.e(TAG,"score="+score);
+                    score = 1000000 * gm.player.getVolume()/deltaTime;
+
+                    Log.e(TAG,"score="+score);
+                }
+
+                Score.setScore((int)score);
+                Activity ac = (Activity) context;
+                Intent i = new Intent(context, WinActivity.class);
+                ac.startActivity(i);
+                ac.finish();
             }
-
-            Score.setScore((int)score);
-            Activity ac = (Activity) context;
-            Intent i = new Intent(context, WinActivity.class);
-            ac.startActivity(i);
-            ac.finish();
         }
+
+
 
         // draw all
         draw();
@@ -475,19 +478,19 @@ public class OsmosRenderer implements Renderer
             }
             case 8:
             {
-                gm.remainingEnemies = 4;
+                gm.remainingEnemies = 15 ;
                 for(i = 0;i<gm.remainingEnemies;i++)
                 {
                     boolean noCollision = true;
-                    if( i==0 )
-                        temp = new Planet(0.9, Planet.TYPE.RepulsiveStar);
-                    else
-                        temp = new Planet(0.9, Planet.TYPE.NormalStar);
+
+                    temp = new Planet(1.1f, Planet.TYPE.ChaosStar);
+
                     float xx = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
                     float yy = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
                     float zz = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
 
                     temp.setWorldLocation(xx,yy,zz);
+                    temp.set_velocity(xx / 3.0f, yy / 3.0f, zz / 3.0f);
                     if( gm.player.check_collision(temp))
                     {
                         noCollision = false;
@@ -703,10 +706,8 @@ public class OsmosRenderer implements Renderer
                 for(i = 0;i<gm.remainingEnemies;i++)
                 {
                     boolean noCollision = true;
-                    if( i< 10 )
-                        temp = new Planet(1.1f, Planet.TYPE.NormalStar);
-                    else
-                        temp = new Planet(2.f, Planet.TYPE.BreatheStar);
+
+                    temp = new Planet(1.1f, Planet.TYPE.ChaosStar);
 
                     float xx = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
                     float yy = (r.nextBoolean())?r.nextInt(10):-r.nextInt(10);
@@ -1425,9 +1426,9 @@ public class OsmosRenderer implements Renderer
         float yy = gm.player.getWorldLocation().y;
         float zz = gm.player.getWorldLocation().z;
 
-        eyeX = xx - viewDistance * face.x;
-        eyeY = yy - viewDistance * face.y;
-        eyeZ = zz - viewDistance * face.z;
+        eyeX = xx - ic.viewDistance * face.x;
+        eyeY = yy - ic.viewDistance * face.y;
+        eyeZ = zz - ic.viewDistance * face.z;
 
 //        centerX = eyeX + face.x;
 //        centerY = eyeY + face.y;

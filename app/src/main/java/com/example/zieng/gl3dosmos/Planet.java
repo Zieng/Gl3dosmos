@@ -68,6 +68,7 @@ public class Planet
         ChaosStar,
         BreatheStar,
         PlayerStar,
+        ChildStar,
     }
     TYPE type;
 
@@ -96,6 +97,16 @@ public class Planet
             darkStarTexture     ,
             chaosStarTexture    ,
             breatheStarTexture  ,
+            normalStarTexture_weak,
+            repulsiveStarTexture_weak,
+            chaosStarTexture_weak,
+            nutriStarTexture_weak,
+            breatheStarTexture_weak,
+            swallowStarTexture_weak,
+            invisibleStarTexture_weak,
+            swiftStarTexture_weak,
+            darkStarTexture_weak,
+            childStarTexture,
             undefinedTexture    ;
 
     static int verticesNum = 0;
@@ -109,6 +120,7 @@ public class Planet
     private Point3F velocity;
 
     int textureId;
+    int textureId_weak;
     int [] vertexBuffer = new int[1];
     int [] uvBuffer = new int[1];
     int [] normalBuffer = new int[1];
@@ -116,7 +128,7 @@ public class Planet
     private float [] self_modelMatrix = new float[16];
 
     boolean isActive = false;
-    // TODO: 11/22/15 Planet class
+    boolean isWeak = false;
 
     public Planet(double radius, TYPE t)
     {
@@ -171,39 +183,55 @@ public class Planet
         {
             case PlayerStar:
                 textureId = playerStarTexture;
+                textureId_weak = textureId;
+                break;
+            case ChildStar:
+                textureId = childStarTexture;
+                textureId_weak = textureId;
                 break;
             case CenterStar:
                 textureId = centerStarTexture;
+                textureId_weak = textureId;
                 break;
             case NormalStar:
                 textureId = normalStarTexture;
+                textureId_weak = nutriStarTexture;
                 break;
             case InvisibleStar:
                 textureId = invisibleStarTexture;
+                textureId_weak = invisibleStarTexture_weak;
                 break;
             case RepulsiveStar:
                 textureId = repulsiveStarTexture;
+                textureId_weak = repulsiveStarTexture_weak;
                 break;
             case SwallowStar:
                 textureId = swallowStarTexture;
+                textureId_weak = swallowStarTexture_weak ;
                 break;
             case SwiftStar:
                 textureId = swiftStarTexture;
+                textureId_weak = swiftStarTexture_weak;
                 break;
             case NutriStar:
                 textureId = nutriStarTexture;
+                textureId_weak = nutriStarTexture_weak;
                 break;
             case ChaosStar:
                 textureId = chaosStarTexture;
+                textureId_weak = chaosStarTexture_weak;
                 break;
             case DarkStar:
                 textureId = darkStarTexture;
+                textureId_weak = darkStarTexture_weak;
                 break;
             case BreatheStar:
                 textureId = breatheStarTexture;
+                textureId_weak = breatheStarTexture_weak;
                 break;
             default:
                 textureId = undefinedTexture;
+                textureId_weak = undefinedTexture;
                 break;
         }
     }
@@ -344,20 +372,11 @@ public class Planet
 
     public void draw(float [] projectionMatrix, float [] viewportMatrix )
     {
-//        Log.e(TAG,"draw planet........");
-//        Log.e(TAG,"planet has texure="+textureId);
-//        Log.e(TAG,"planet at "+getWorldLocation().toString());
-
-//        print_data();
-
-
-//        Log.e(TAG,"planet vertices size="+planet.share_vertices.capacity());
-//        Log.e(TAG,"planet uvs size="+planet.share_uvs.capacity());
 
         float [] tempMatrix = new float[16];
         float [] MVP_matrix = new float[16];
 
-        multiplyMM(tempMatrix, 0, viewportMatrix, 0, self_modelMatrix , 0);  // tempMatrix = viewportModelMatrix = viewportMatrix * self_modelMatrix
+        multiplyMM(tempMatrix, 0, viewportMatrix, 0, self_modelMatrix, 0);  // tempMatrix = viewportModelMatrix = viewportMatrix * self_modelMatrix
         multiplyMM(MVP_matrix, 0, projectionMatrix, 0, tempMatrix, 0);
 
 
@@ -366,7 +385,10 @@ public class Planet
 
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, textureId);
+        if( !isWeak )
+            glBindTexture(GL_TEXTURE_2D, textureId);
+        else
+            glBindTexture(GL_TEXTURE_2D, textureId_weak );
 
         glUniform1i(GLManager.MyTextureSamplerID, 0);
         glUniformMatrix4fv(GLManager.MVPID, 1, false, MVP_matrix, 0);
@@ -470,16 +492,36 @@ public class Planet
 //        this.context = context;
 
         playerStarTexture = LoadHelper.loadTexture(context,R.mipmap.player);
+        childStarTexture = LoadHelper.loadTexture(context,R.mipmap.child);
+
         centerStarTexture = LoadHelper.loadTexture(context,R.mipmap.sun);
         normalStarTexture = LoadHelper.loadTexture(context,R.mipmap.normal);
+        normalStarTexture_weak = LoadHelper.loadTexture(context,R.mipmap.normal_weak);
+
         repulsiveStarTexture = LoadHelper.loadTexture(context,R.mipmap.repulsive);
+        repulsiveStarTexture_weak = LoadHelper.loadTexture(context,R.mipmap.repulsive_weak);
+
         invisibleStarTexture = LoadHelper.loadTexture(context,R.mipmap.invisible);
+        invisibleStarTexture_weak =invisibleStarTexture;
+
         swiftStarTexture = LoadHelper.loadTexture(context,R.mipmap.swift);
+        swiftStarTexture_weak = swiftStarTexture;
+
         swallowStarTexture = LoadHelper.loadTexture(context,R.mipmap.swallow);
+        swallowStarTexture_weak = LoadHelper.loadTexture(context,R.mipmap.swallow_weak);
+
         nutriStarTexture = LoadHelper.loadTexture(context,R.mipmap.nutri);
+        nutriStarTexture_weak = nutriStarTexture;
+
         darkStarTexture = LoadHelper.loadTexture(context,R.mipmap.dark);
+        darkStarTexture_weak = darkStarTexture;
+
         chaosStarTexture = LoadHelper.loadTexture(context,R.mipmap.chaos);
+        chaosStarTexture_weak = LoadHelper.loadTexture(context,R.mipmap.chaos_weak);
+
         breatheStarTexture = LoadHelper.loadTexture(context,R.mipmap.breathe);
+        breatheStarTexture_weak = LoadHelper.loadTexture(context,R.mipmap.breathe_weak);
+
         undefinedTexture = LoadHelper.loadTexture(context,R.mipmap.undefined);
 
         long origThreadID = Thread.currentThread().getId();

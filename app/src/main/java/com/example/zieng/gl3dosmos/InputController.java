@@ -5,6 +5,7 @@ import android.graphics.RectF;
 import android.support.v4.view.MotionEventCompat;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 
 import java.util.ArrayList;
 
@@ -16,6 +17,7 @@ import static android.opengl.Matrix.setLookAtM;
  */
 public class InputController
 {
+    private ScaleGestureDetector SGD;
     boolean noChild = false ;
     boolean inChaos = false;
 
@@ -49,11 +51,15 @@ public class InputController
 
     float speed = 1 ;
 
+    float viewDistance = 10.f;
+
     public InputController(Context context,int screenWidth,int screenHeight)
     {
 //        Log.e(TAG,"constructor: width="+screenWidth+",heigth="+screenHeight);
 
         this.context = context;
+
+        SGD = new ScaleGestureDetector(context, new ScaleListener());
         horizontalAngle = 3.14159f;
         verticalAngle = 0;
         angleSpeed = 0.001f;
@@ -141,7 +147,6 @@ public class InputController
     public void handleInput(MotionEvent motionEvent,GameManager gm,SoundManager sm)
     {
 
-        // TODO: 11/22/15 handle Input
         int pointerCount = motionEvent.getPointerCount();
         boolean togglePause = false;
 
@@ -266,7 +271,9 @@ public class InputController
 
                     }
                     else
-                        fingerDrag = false;
+                    {
+                        SGD.onTouchEvent(motionEvent);
+                    }
 
                     break;
                 }
@@ -331,7 +338,7 @@ public class InputController
         gm.player.set_radius(      Math.pow( volume-Math.pow(r,3)  ,  1.0/3.0)     );
         double R = gm.player.get_radius();
 
-        Planet child = new Planet(r, Planet.TYPE.NormalStar );
+        Planet child = new Planet(r, Planet.TYPE.ChildStar );
         Point3F offset = new Point3F(face.x, face.y , face.z);
 
         if( isThrust )
@@ -354,4 +361,18 @@ public class InputController
         gm.stars.add(child);
     }
 
+
+    private class ScaleListener
+            extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+        @Override
+        public boolean onScale(ScaleGestureDetector detector) {
+            viewDistance *= detector.getScaleFactor();
+
+            // Don't let the object get too small or too large.
+            viewDistance = Math.max(3.0f, Math.min(viewDistance, 20.0f));
+
+//            invalidate();
+            return true;
+        }
+    }
 }
