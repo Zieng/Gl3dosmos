@@ -16,4 +16,13 @@ public class Score {
     public static int getScore(){
         return score;
     }
+
+
+
+
+
+    public static int getBest(){
+        return top;
+    }
+
 }

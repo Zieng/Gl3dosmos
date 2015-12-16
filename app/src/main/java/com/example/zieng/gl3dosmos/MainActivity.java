@@ -54,8 +54,8 @@ public class MainActivity extends Activity {
         pv.setOnSelectListener(new PickerView.onSelectListener() {
             @Override
             public void onSelect(String text) {
-                Toast.makeText(MainActivity.this, "Level " + text,
-                        Toast.LENGTH_SHORT).show();
+//                Toast.makeText(MainActivity.this, "Level " + text,
+//                        Toast.LENGTH_SHORT).show();
 
                 int level = Integer.parseInt(text);
                 Level.setLevel(level);
@@ -90,7 +90,7 @@ public class MainActivity extends Activity {
         best.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(MainActivity.this, "Best Score: " + String.valueOf(Score.getScore()),
+                Toast.makeText(MainActivity.this, "Best Score: " + String.valueOf(Score.getBest()),
                         Toast.LENGTH_LONG).show();
             }
         });
@@ -100,7 +100,9 @@ public class MainActivity extends Activity {
         about.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, AboutActivity.class));
+                Toast.makeText(MainActivity.this, "“在漆黑孤寂的宇宙中，你只能靠自己。”",
+                        Toast.LENGTH_LONG).show();
+                //startActivity(new Intent(MainActivity.this, AboutActivity.class));
             }
         });
 
