@@ -155,26 +155,6 @@ public class OsmosRenderer implements Renderer
             }
         }
 
-<<<<<<< HEAD
-        if( gm.player.isActive == false)
-        {
-            gm.gameOver = true;
-
-            Log.e(TAG,"You lose!");
-            // TODO: 11/29/15 handle Game over
-
-        }
-        else if( gm.remainingEnemies == 0)
-        {
-            gm.gameWin = true;
-
-            Log.e(TAG,"You win!");
-            //// TODO: 11/29/15 handle Game Win
-
-        }
-=======
->>>>>>> add_ui
-
         if( gm.is_playing() )  // update if is playing
         {
             // apply field effect

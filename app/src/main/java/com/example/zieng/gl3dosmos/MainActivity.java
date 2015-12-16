@@ -100,7 +100,7 @@ public class MainActivity extends Activity {
         about.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(MainActivity.this, "“在漆黑孤寂的宇宙中，你只能靠自己。”",
+                Toast.makeText(MainActivity.this, "“开发者：杨煜溟，李杰。\n项目地址：https://github.com/Zieng/Gl3dosmos”",
                         Toast.LENGTH_LONG).show();
                 //startActivity(new Intent(MainActivity.this, AboutActivity.class));
             }
